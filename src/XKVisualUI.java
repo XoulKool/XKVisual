@@ -14,6 +14,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -24,6 +25,8 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 /**
@@ -36,7 +39,7 @@ public class XKVisualUI extends Application {
     private Label time;
     Duration duration;
     Button fullScreenButton;
-    Button playButton;
+    Button playButton, pauseButton, stopButton, fileOpenButton;
     Scene scene;
     Media media;
     double width;
@@ -47,27 +50,7 @@ public class XKVisualUI extends Application {
     public void start(Stage primaryStage) {
 
 //The location of your file
-        Media media = new Media(new File("/Users/Jason/Music/iTunes/iTunes Media/Music"
-                + "/A Tribe Called Quest/We got it from Here... Thank You 4 Your/1-01 The Space Program.mp3").toURI().toString());
-
-        MediaPlayer mediaPlayer = new MediaPlayer(media);
-        mediaPlayer.setAutoPlay(true);
-        MediaView mediaView = new MediaView(mediaPlayer);
-        Image playButtonImage = new Image(getClass().getResourceAsStream("Play.png"));
-        Button playButton = new Button();
-        playButton.setGraphic(new ImageView(playButtonImage));
-        playButton.setStyle("-fx-background-color: Black");
-
-        playButton.setOnAction((ActionEvent e) -> {
-
-        });
-        playButton.addEventHandler(MouseEvent.MOUSE_ENTERED, (MouseEvent e) -> {
-            playButton.setStyle("-fx-background-color: Black");
-            playButton.setStyle("-fx-body-color: Black");
-        });
-        playButton.addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent e) -> {
-            playButton.setStyle("-fx-background-color: Black");
-        });
+        openFile(0);
 
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(mediaView);
@@ -75,12 +58,19 @@ public class XKVisualUI extends Application {
 
         borderPane.setStyle("-fx-background-color: Black");
 
-        Scene scene = new Scene(borderPane, 600, 600);
+        scene = new Scene(borderPane, 600, 600);
         scene.setFill(Color.BLACK);
 
         primaryStage.setTitle("Media Player!");
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        DropShadow dropshadow = new DropShadow();
+        dropshadow.setOffsetY(5.0);
+        dropshadow.setOffsetX(5.0);
+        dropshadow.setColor(Color.WHITE);
+
+        mediaView.setEffect(dropshadow);
 
     }
 
@@ -92,6 +82,76 @@ public class XKVisualUI extends Application {
         toolBar.setSpacing(5);
         toolBar.setStyle("-fx-background-color: Black");
 
+        playButton = new Button();
+        pauseButton = new Button();
+        stopButton = new Button();
+        fileOpenButton = new Button();
+
+        XKButtonSetup(playButton, "/Icons/Play.png");
+        XKButtonSetup(pauseButton, "/Icons/Pause.png");
+        XKButtonSetup(stopButton, "/Icons/Stop.png");
+        XKButtonSetup(fileOpenButton, "/Icons/OpenFile.png");
+
+        buttonFunctionality();
+
+        toolBar.getChildren().addAll(playButton, pauseButton, stopButton, fileOpenButton);
+
         return toolBar;
     }
+
+    private void XKButtonSetup(Button button, String imagePath) {
+        Image buttonImage = new Image(getClass().getResourceAsStream(imagePath));
+        button.setGraphic(new ImageView(buttonImage));
+        button.setStyle("-fx-background-color: Black");
+
+        button.addEventHandler(MouseEvent.MOUSE_ENTERED, (MouseEvent e) -> {
+            button.setStyle("-fx-background-color: Black");
+            button.setStyle("-fx-body-color: Black");
+        });
+        button.addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent e) -> {
+            button.setStyle("-fx-background-color: Black");
+        });
+    }
+
+    private void buttonFunctionality() {
+        playButton.setOnAction((ActionEvent e) -> {
+            mediaPlayer.play();
+        });
+
+        pauseButton.setOnAction((ActionEvent e) -> {
+            mediaPlayer.pause();
+        });
+
+        stopButton.setOnAction((ActionEvent e) -> {
+            mediaPlayer.stop();
+        });
+        fileOpenButton.setOnAction((ActionEvent e) -> {
+            openFile(1);
+        });
+    }
+
+    private void openFile(int i) {
+
+        FileChooser fc = new FileChooser();
+        fc.getExtensionFilters().add(new ExtensionFilter("*.mp3", "*.mp3"));
+        File file = fc.showOpenDialog(null);
+        String path = file.getAbsolutePath();
+        path = path.replace("\\", "/");
+        media = new Media(new File(path).toURI().toString());
+        
+        if (i == 1) {
+            mediaPlayer.stop();
+        }
+
+        mediaPlayer = new MediaPlayer(media);
+        mediaPlayer.setAutoPlay(true);
+        mediaView = new MediaView(mediaPlayer);
+        mediaView.setMediaPlayer(mediaPlayer);
+
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
 }
