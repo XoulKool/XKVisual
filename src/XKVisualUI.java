@@ -5,8 +5,12 @@
  */
 
 import java.io.File;
-import java.time.Duration;
+import static java.lang.Math.floor;
+import static java.lang.String.format;
+
 import javafx.application.Application;
+import static javafx.application.Platform.runLater;
+import javafx.beans.Observable;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -28,6 +32,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 /**
  *
@@ -38,8 +43,7 @@ public class XKVisualUI extends Application {
     MediaPlayer mediaPlayer;
     private Label time;
     Duration duration;
-    Button fullScreenButton;
-    Button playButton, pauseButton, stopButton, fileOpenButton;
+    Button playButton, pauseButton, stopButton, fileOpenButton, fullScreenButton;
     Scene scene;
     Media media;
     double width;
@@ -48,9 +52,17 @@ public class XKVisualUI extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        
+        startXKVisual(primaryStage);
+        
+    }
 
-//The location of your file
-        openFile(0);
+    public void restart(Stage stage){
+        startXKVisual(stage);
+    }
+    
+    public void startXKVisual(Stage stage) {
+        initializeMedia(0);
 
         BorderPane borderPane = new BorderPane();
         borderPane.setCenter(mediaView);
@@ -61,9 +73,16 @@ public class XKVisualUI extends Application {
         scene = new Scene(borderPane, 600, 600);
         scene.setFill(Color.BLACK);
 
-        primaryStage.setTitle("Media Player!");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        stage.setTitle("XKVisual");
+        stage.setScene(scene);
+        fullScreenButton.setOnAction((ActionEvent e) -> {
+            if (stage.isFullScreen()) {
+                stage.setFullScreen(false);
+            } else {
+                stage.setFullScreen(true);
+            }
+        });
+        stage.show();
 
         DropShadow dropshadow = new DropShadow();
         dropshadow.setOffsetY(5.0);
@@ -71,7 +90,11 @@ public class XKVisualUI extends Application {
         dropshadow.setColor(Color.WHITE);
 
         mediaView.setEffect(dropshadow);
-
+        
+        fileOpenButton.setOnAction((ActionEvent e) -> {
+           mediaPlayer.stop();
+           restart(stage);
+        });
     }
 
     private HBox addToolBar() {
@@ -86,15 +109,17 @@ public class XKVisualUI extends Application {
         pauseButton = new Button();
         stopButton = new Button();
         fileOpenButton = new Button();
+        fullScreenButton = new Button();
 
         XKButtonSetup(playButton, "/Icons/Play.png");
         XKButtonSetup(pauseButton, "/Icons/Pause.png");
         XKButtonSetup(stopButton, "/Icons/Stop.png");
         XKButtonSetup(fileOpenButton, "/Icons/OpenFile.png");
+        XKButtonSetup(fullScreenButton, "/Icons/FullScreen.png");
 
         buttonFunctionality();
 
-        toolBar.getChildren().addAll(playButton, pauseButton, stopButton, fileOpenButton);
+        toolBar.getChildren().addAll(playButton, pauseButton, stopButton, fileOpenButton, time, fullScreenButton);
 
         return toolBar;
     }
@@ -125,12 +150,11 @@ public class XKVisualUI extends Application {
         stopButton.setOnAction((ActionEvent e) -> {
             mediaPlayer.stop();
         });
-        fileOpenButton.setOnAction((ActionEvent e) -> {
-            openFile(1);
-        });
+        
+
     }
 
-    private void openFile(int i) {
+    private void initializeMedia(int i) {
 
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new ExtensionFilter("*.mp3", "*.mp3"));
@@ -138,20 +162,84 @@ public class XKVisualUI extends Application {
         String path = file.getAbsolutePath();
         path = path.replace("\\", "/");
         media = new Media(new File(path).toURI().toString());
-        
-        if (i == 1) {
-            mediaPlayer.stop();
-        }
 
         mediaPlayer = new MediaPlayer(media);
         mediaPlayer.setAutoPlay(true);
         mediaView = new MediaView(mediaPlayer);
         mediaView.setMediaPlayer(mediaPlayer);
-
+        initializeTimeLabel();
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    private void initializeTimeLabel() {
+        time = new Label();
+        time.setTextFill(Color.YELLOW);
+        time.setPrefWidth(80);
+
+        mediaPlayer.currentTimeProperty().addListener((Observable ov) -> {
+            updateValues();
+
+        });
+        mediaPlayer.setOnReady(() -> {
+            duration = mediaPlayer.getMedia().getDuration();
+            updateValues();
+
+        });
+        mediaPlayer.setOnPlaying(() -> {
+            duration = mediaPlayer.getMedia().getDuration();
+            updateValues();
+        });
+        mediaPlayer.setOnStopped(() -> {
+            duration = mediaPlayer.getMedia().getDuration();
+            updateValues();
+        });
+    }
+
+    protected void updateValues() {
+        if (time != null) {
+            runLater(() -> {
+                javafx.util.Duration currentTime = mediaPlayer.getCurrentTime();
+                time.setText(formatTime(currentTime, duration));
+            });
+        }
+    }
+
+    private String formatTime(Duration elapsed, Duration duration) {
+        int intElapsed = (int) floor(elapsed.toSeconds());
+        int elapsedHours = intElapsed / (60 * 60);
+        if (elapsedHours > 0) {
+            intElapsed -= elapsedHours * 60 * 60;
+        }
+        int elapsedMinutes = intElapsed / 60;
+        int elapsedSeconds = intElapsed - elapsedHours * 60 * 60
+                - elapsedMinutes * 60;
+
+        if (duration.greaterThan(Duration.ZERO)) {
+            int intDuration = (int) floor(duration.toSeconds());
+            int durationHours = intDuration / (60 * 60);
+            if (durationHours > 0) {
+                intDuration -= durationHours * 60 * 60;
+            }
+            int durationMinutes = intDuration / 60;
+            int durationSeconds = intDuration - durationHours * 60 * 60
+                    - durationMinutes * 60;
+            if (durationHours > 0) {
+                return format("%d:%02d:%02d/%d:%02d:%02d",
+                        elapsedHours, elapsedMinutes, elapsedSeconds,
+                        durationHours, durationMinutes, durationSeconds);
+            } else {
+                return format("%02d:%02d/%02d:%02d",
+                        elapsedMinutes, elapsedSeconds, durationMinutes,
+                        durationSeconds);
+            }
+        } else {
+            if (elapsedHours > 0) {
+                return format("%d:%02d:%02d", elapsedHours,
+                        elapsedMinutes, elapsedSeconds);
+            } else {
+                return format("%02d:%02d", elapsedMinutes,
+                        elapsedSeconds);
+            }
+        }
     }
 
 }
