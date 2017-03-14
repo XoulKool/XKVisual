@@ -96,10 +96,12 @@ public class XKVisualUI extends Application {
         rect.setFill(Color.BLUE);
 
         ConcentricGenerator conCircles = new ConcentricGenerator();
+        BouncyCircles bc = new BouncyCircles();
         //animation(conCircles);
         
         circlePath(conCircles);
-        blendWithGrad(conCircles);
+        //blendWithGrad(conCircles);
+        blendWithGrad(bc);
 
         Pane pane = new Pane();
         pane.getChildren().addAll(root);
