@@ -73,7 +73,6 @@ public class XKVisualUI extends Application {
     double width;
     double height;
     MediaView mediaView;
-    Group root;
 
     @Override
     public void start(Stage primaryStage) {
@@ -88,10 +87,12 @@ public class XKVisualUI extends Application {
 
     public void startXKVisual(Stage stage) {
         initializeMedia(0);
+        
+        UsefulFunctions func = new UsefulFunctions();
 
         BorderPane borderPane = new BorderPane();
 
-        root = new Group();
+        Group root = new Group();
         Rectangle rect = new Rectangle(1000, 600);
         rect.setFill(Color.BLUE);
 
@@ -99,9 +100,20 @@ public class XKVisualUI extends Application {
         BouncyCircles bc = new BouncyCircles();
         //animation(conCircles);
         
-        circlePath(conCircles);
-        //blendWithGrad(conCircles);
-        blendWithGrad(bc);
+        func.circlePath(conCircles);
+        //func.blendWithGrad(root, conCircles);
+        
+        /*Node[] nodes = new Node[2];
+        
+        for(int i = 0; i < nodes.length; i ++){
+            if(i == 0){
+                nodes[i] = bc;
+            }
+            else
+                nodes[i] = conCircles;
+        }*/
+        
+        func.blendWithGrad(root, bc, conCircles);
 
         Pane pane = new Pane();
         pane.getChildren().addAll(root);
@@ -116,6 +128,7 @@ public class XKVisualUI extends Application {
 
         stage.setTitle("XKVisual");
         stage.setScene(scene);
+        stage.setFullScreen(true);
         fullScreenButton.setOnAction((ActionEvent e) -> {
             if (stage.isFullScreen()) {
                 stage.setFullScreen(false);
@@ -274,103 +287,5 @@ public class XKVisualUI extends Application {
         }
     }
 
-    public void animation(Group group) {
-
-        Group circles = new Group();
-        for (int i = 0; i < 100; i++) {
-            Circle circle = new Circle(25, Color.web("white", 0.05));
-            circle.setStrokeType(StrokeType.OUTSIDE);
-            circle.setStroke(Color.web("white", 0.16));
-            circle.setStrokeWidth(4);
-            circle.setCenterX(500);
-            circle.setCenterY(300);
-            circles.getChildren().add(circle);
-        }
-
-
-        /*root.getChildren().add(colors);
-         root.getChildren().add(circles);*/
-
-        Timeline timeline = new Timeline();
-         for (Node circle : circles.getChildren()) {
-         timeline.getKeyFrames().addAll(
-         new KeyFrame(Duration.ZERO, // set start position at 0
-         new KeyValue(circle.translateXProperty(), 0),
-         new KeyValue(circle.translateYProperty(), 0)
-         ),
-         new KeyFrame(new Duration(2000), // set end position at 40s
-         new KeyValue(circle.translateXProperty(), random() * 1000),
-         new KeyValue(circle.translateYProperty(), random() * 1000)
-         )
-         );
-         }
-        /*EventHandler onFinished = new EventHandler<ActionEvent>() {
-         public void handle(ActionEvent t) {
-         group.getChildren().remove(blendModeGroup);
-         animation(group);
-         }
-         };*/
-        //KeyFrame keyFrame = new KeyFrame(new Duration(4000), onFinished);
-        //add the keyframe to the timeline
-        //timeline.getKeyFrames().add(keyFrame);
-        // play 40s of animation
-        //timeline.play();
+    
     }
-
-    public void circlePath(Node node) {
-
-        Path path = createEllipsePath(1400, 400, 700, 300, 0);
-
-        //path.getElements().add(new MoveTo(50, 50));
-        //path.getElements().add(arcTo);
-        PathTransition pathTransition = new PathTransition();
-        pathTransition.setDuration(Duration.millis(4000));
-        pathTransition.setPath(path);
-        pathTransition.setNode(node);
-        pathTransition.setOrientation(PathTransition.OrientationType.ORTHOGONAL_TO_TANGENT);
-        pathTransition.setCycleCount(Timeline.INDEFINITE);
-        pathTransition.setInterpolator(Interpolator.LINEAR);
-        pathTransition.setAutoReverse(false);
-        pathTransition.setRate(.5);
-        pathTransition.play();
-    }
-
-    private Path createEllipsePath(double centerX, double centerY, double radiusX, double radiusY, double rotate) {
-        ArcTo arcTo = new ArcTo();
-        arcTo.setX(centerX - radiusX + 1); // to simulate a full 360 degree celcius circle.
-        arcTo.setY(centerY - radiusY);
-        arcTo.setSweepFlag(false);
-        arcTo.setLargeArcFlag(true);
-        arcTo.setRadiusX(radiusX);
-        arcTo.setRadiusY(radiusY);
-        arcTo.setXAxisRotation(rotate);
-
-        Path path = PathBuilder.create()
-                .elements(
-                        new MoveTo(centerX - radiusX, centerY - radiusY),
-                        arcTo,
-                        new ClosePath()) // close 1 px gap.
-                .build();
-        return path;
-    }
-
-    public void blendWithGrad(Group group) {
-        LinearGradient grad = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
-            new Stop(0, Color.web("green")),
-            new Stop(0.14, Color.web("turquoise")),
-            new Stop(0.28, Color.web("violet")),
-            new Stop(0.57, Color.web("yellow")),
-            new Stop(0.71, Color.web("hotpink")),
-            new Stop(1, Color.web("maroon")),});
-
-        Rectangle colors = new Rectangle(1600, 1200, grad);
-
-        Group blendModeGroup
-                = new Group(new Group(new Rectangle(1600, 1200,
-                                        Color.BLACK), group), colors);
-        colors.setBlendMode(BlendMode.OVERLAY);
-        root.getChildren().add(blendModeGroup);
-        group.setEffect(new BoxBlur(3, 3, 3));
-    }
-
-}

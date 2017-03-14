@@ -11,36 +11,60 @@ import javafx.scene.shape.StrokeType;
 import javafx.util.Duration;
 
 public class BouncyCircles extends Group {
-    
-    BouncyCircles(Group group){
+
+    private class RandomCircle extends Circle {
+
+        Timeline animation = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(super.translateXProperty(), 0),
+                    new KeyValue(super.translateYProperty(), 0)),
+            new KeyFrame(new Duration(2000), // set end position at 40s
+                    new KeyValue(super.translateXProperty(), random() * 1000),
+                    new KeyValue(super.translateYProperty(), random() * 1000))
+        );
         
-        Group circles = new Group();
-        for (int i = 0; i < 100; i++) {
-            Circle circle = new Circle(25, Color.web("white", 0.05));
-            circle.setStrokeType(StrokeType.OUTSIDE);
-            circle.setStroke(Color.web("white", 0.16));
-            circle.setStrokeWidth(4);
-            circle.setCenterX(500);
-            circle.setCenterY(300);
-            circles.getChildren().add(circle);
+        RandomCircle(){
+            super(300, 500, 25, Color.web("white", 0.05));
+            super.setStrokeType(StrokeType.OUTSIDE);
+            super.setStroke(Color.web("white", 0.16));
+            super.setStrokeWidth(4);
         }
         
-        Timeline timeline = new Timeline();
-         for (Node circle : circles.getChildren()) {
-         timeline.getKeyFrames().addAll(
-         new KeyFrame(Duration.ZERO, // set start position at 0
-         new KeyValue(circle.translateXProperty(), 0),
-         new KeyValue(circle.translateYProperty(), 0)
-         ),
-         new KeyFrame(new Duration(2000), // set end position at 40s
-         new KeyValue(circle.translateXProperty(), random() * 1000),
-         new KeyValue(circle.translateYProperty(), random() * 1000)
-         )
-         );
-         }
-         
-         group.getChildren().add(this)
         
     }
+
+    private Group circles = new Group();
     
+    private Timeline animationGenerator = new Timeline();
+
+    public BouncyCircles() {
+        animationGenerator.setCycleCount(Timeline.INDEFINITE);
+        this.animateCircles();
+        this.startPlaying();
+
+    }
+
+    public void animateCircles() {
+        
+
+        for (int i = 0; i < 100; i++) {
+            RandomCircle randomCircle = new RandomCircle();
+            getChildren().add(randomCircle);
+            randomCircle.animation.play();
+        }
+    }
+
+    public void startPlaying() {
+        animationGenerator.play();
+    }
+
+    public void stopPlaying() {
+        animationGenerator.stop();
+    }
+
+    /*EventHandler onFinished = new EventHandler<ActionEvent>() {
+         public void handle(ActionEvent t) {
+         group.getChildren().remove(blendModeGroup);
+         animation(group);
+         }
+         };*/
 }

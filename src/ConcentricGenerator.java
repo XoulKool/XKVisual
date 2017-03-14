@@ -34,15 +34,15 @@ public class ConcentricGenerator extends Group {
      private double generatorCenterX = 100.0;
      private double generatorCenterY = 100.0;
 
-     private Timeline generate = new Timeline(
-     new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>() {
+     private Timeline generate = new Timeline()
+     /*new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>() {
      @Override
      public void handle(ActionEvent event) {
      createRipple();
      }
      }
      )
-     );
+     )*/;
 
      public ConcentricGenerator() {
      generate.setCycleCount(Timeline.INDEFINITE);
