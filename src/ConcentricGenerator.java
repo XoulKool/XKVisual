@@ -25,8 +25,8 @@ public class ConcentricGenerator extends Group {
 
      private Ripple(double centerX, double centerY) {
      super(centerX, centerY, 0, null);
-     setStroke(Color.web("white", 0.16));
-     setStrokeWidth(3);
+     setStroke(Color.web("white", .5));
+     setStrokeWidth(6);
      //animation.setRate(.2);
      }
      }
@@ -34,15 +34,17 @@ public class ConcentricGenerator extends Group {
      private double generatorCenterX = 100.0;
      private double generatorCenterY = 100.0;
 
-     private Timeline generate = new Timeline()
-     /*new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>() {
+     private Timeline generate = new Timeline(
+     new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>() {
      @Override
      public void handle(ActionEvent event) {
      createRipple();
      }
      }
      )
-     )*/;
+     )
+             
+     ;
 
      public ConcentricGenerator() {
      generate.setCycleCount(Timeline.INDEFINITE);

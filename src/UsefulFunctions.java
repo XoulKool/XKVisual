@@ -19,6 +19,14 @@ import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 public class UsefulFunctions {
+    
+    LinearGradient grad = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
+            new Stop(0, Color.web("green")),
+            new Stop(0.14, Color.web("turquoise")),
+            new Stop(0.28, Color.web("violet")),
+            new Stop(0.57, Color.web("yellow")),
+            new Stop(0.71, Color.web("hotpink")),
+            new Stop(1, Color.web("maroon")),});
 
     public Path createEllipsePath(double centerX, double centerY, double radiusX, double radiusY, double rotate) {
         ArcTo arcTo = new ArcTo();
@@ -40,13 +48,7 @@ public class UsefulFunctions {
     }
 
     public void blendWithGrad(Group root, Node... varargs) {
-        LinearGradient grad = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
-            new Stop(0, Color.web("green")),
-            new Stop(0.14, Color.web("turquoise")),
-            new Stop(0.28, Color.web("violet")),
-            new Stop(0.57, Color.web("yellow")),
-            new Stop(0.71, Color.web("hotpink")),
-            new Stop(1, Color.web("maroon")),});
+        
 
         Rectangle colors = new Rectangle(1600, 1200, grad);
 
@@ -92,4 +94,10 @@ public class UsefulFunctions {
         pathTransition.setRate(.5);
         pathTransition.play();
     }
+    
+    public void changeGrad(LinearGradient gradient){
+        grad = gradient;
+    }
+    
+    
 }

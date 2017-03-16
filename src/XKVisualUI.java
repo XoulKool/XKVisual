@@ -36,6 +36,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.media.AudioSpectrumListener;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -93,15 +94,18 @@ public class XKVisualUI extends Application {
         BorderPane borderPane = new BorderPane();
 
         Group root = new Group();
+        Pane pane = new Pane();
+        pane.setPrefSize(800, 600);
         Rectangle rect = new Rectangle(1000, 600);
         rect.setFill(Color.BLUE);
 
         ConcentricGenerator conCircles = new ConcentricGenerator();
-        BouncyCircles bc = new BouncyCircles();
+        CongregatedCircles cc1 = new CongregatedCircles();
+        DispersedCircles dc1 = new DispersedCircles();
+        CongregatedCircles cc2 = new CongregatedCircles();
         //animation(conCircles);
         
         func.circlePath(conCircles);
-        //func.blendWithGrad(root, conCircles);
         
         /*Node[] nodes = new Node[2];
         
@@ -113,12 +117,15 @@ public class XKVisualUI extends Application {
                 nodes[i] = conCircles;
         }*/
         
-        func.blendWithGrad(root, bc, conCircles);
+        func.blendWithGrad(root, cc1, dc1, cc2, conCircles);
 
-        Pane pane = new Pane();
+        
         pane.getChildren().addAll(root);
+        
+
 
         borderPane.setCenter(pane);
+        System.out.println(borderPane.getCenter().getBoundsInLocal());
         borderPane.setBottom(addToolBar());
 
         borderPane.setStyle("-fx-background-color: Black");
@@ -187,6 +194,8 @@ public class XKVisualUI extends Application {
     private void buttonFunctionality() {
         playButton.setOnAction((ActionEvent e) -> {
             mediaPlayer.play();
+            System.out.println(mediaPlayer.getAudioSpectrumThreshold());
+            System.out.println(mediaPlayer.getAudioSpectrumListener());
         });
 
         pauseButton.setOnAction((ActionEvent e) -> {
@@ -212,6 +221,7 @@ public class XKVisualUI extends Application {
         mediaPlayer.setAutoPlay(true);
         mediaView = new MediaView(mediaPlayer);
         mediaView.setMediaPlayer(mediaPlayer);
+        mediaPlayer.setAudioSpectrumListener(new SpectrumListener());
         initializeTimeLabel();
     }
 
@@ -286,6 +296,12 @@ public class XKVisualUI extends Application {
             }
         }
     }
-
+   
+    private class SpectrumListener implements AudioSpectrumListener {  
+        
+     @Override  
+     public void spectrumDataUpdate(double timestamp, double duration,   
+        float[] magnitudes, float[] phases) {}
+    }  
     
     }
