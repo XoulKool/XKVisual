@@ -6,6 +6,7 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.BoxBlur;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -19,14 +20,26 @@ import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 public class UsefulFunctions {
-    
-    LinearGradient grad = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
-            new Stop(0, Color.web("green")),
-            new Stop(0.14, Color.web("turquoise")),
-            new Stop(0.28, Color.web("violet")),
-            new Stop(0.57, Color.web("yellow")),
-            new Stop(0.71, Color.web("hotpink")),
-            new Stop(1, Color.web("maroon")),});
+
+    int counter = 0;
+
+    Rectangle colors;
+
+    LinearGradient grad1 = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
+        new Stop(0, Color.web("green")),
+        new Stop(0.14, Color.web("turquoise")),
+        new Stop(0.28, Color.web("violet")),
+        new Stop(0.57, Color.web("yellow")),
+        new Stop(0.71, Color.web("hotpink")),
+        new Stop(1, Color.web("maroon")),});
+
+    LinearGradient grad2 = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
+        new Stop(0, Color.web("LightCoral")),
+        new Stop(0.14, Color.web("Cyan")),
+        new Stop(0.28, Color.web("violet")),
+        new Stop(0.57, Color.web("Crimson")),
+        new Stop(0.71, Color.web("FireBrick")),
+        new Stop(1, Color.web("DarkRed")),});
 
     public Path createEllipsePath(double centerX, double centerY, double radiusX, double radiusY, double rotate) {
         ArcTo arcTo = new ArcTo();
@@ -48,33 +61,37 @@ public class UsefulFunctions {
     }
 
     public void blendWithGrad(Group root, Node... varargs) {
-        
 
-        Rectangle colors = new Rectangle(1600, 1200, grad);
+        if (counter % 2 == 0) {
+
+            colors = new Rectangle(1600, 1200, grad1);
+
+        } else {
+            colors = new Rectangle(1600, 1200, grad2);
+        }
 
         Node[] newargs = new Node[varargs.length + 2];
 
         for (int i = 0; i < newargs.length; i++) {
             if (i == 0) {
                 newargs[i] = new Rectangle(1600, 1200, Color.BLACK);
-            }
-            else if(i < newargs.length - 1){
-                newargs[i] = varargs[i -1];
-            }
-            else
+            } else if (i < newargs.length - 1) {
+                newargs[i] = varargs[i - 1];
+            } else {
                 newargs[i] = colors;
+            }
         }
 
         Group blendModeGroup
                 = new Group(newargs);
         colors.setBlendMode(BlendMode.OVERLAY);
         root.getChildren().add(blendModeGroup);
-        
-        for(int i = 0; i < varargs.length; i++){
+
+        for (int i = 0; i < varargs.length; i++) {
             varargs[i].setEffect(new BoxBlur(3, 3, 3));
         }
-        
-        
+        counter++;
+
     }
 
     public void circlePath(Node node) {
@@ -94,10 +111,5 @@ public class UsefulFunctions {
         pathTransition.setRate(.5);
         pathTransition.play();
     }
-    
-    public void changeGrad(LinearGradient gradient){
-        grad = gradient;
-    }
-    
-    
+
 }

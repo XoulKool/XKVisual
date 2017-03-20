@@ -8,6 +8,9 @@ import java.io.File;
 import static java.lang.Math.floor;
 import static java.lang.Math.random;
 import static java.lang.String.format;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -15,8 +18,10 @@ import javafx.animation.PathTransition;
 import javafx.animation.Timeline;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import static javafx.application.Platform.runLater;
 import javafx.beans.Observable;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -26,6 +31,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.DropShadow;
@@ -88,7 +94,7 @@ public class XKVisualUI extends Application {
 
     public void startXKVisual(Stage stage) {
         initializeMedia(0);
-        
+
         UsefulFunctions func = new UsefulFunctions();
 
         BorderPane borderPane = new BorderPane();
@@ -103,10 +109,7 @@ public class XKVisualUI extends Application {
         CongregatedCircles cc1 = new CongregatedCircles();
         DispersedCircles dc1 = new DispersedCircles();
         CongregatedCircles cc2 = new CongregatedCircles();
-        //animation(conCircles);
-        
-        func.circlePath(conCircles);
-        
+
         /*Node[] nodes = new Node[2];
         
         for(int i = 0; i < nodes.length; i ++){
@@ -116,16 +119,13 @@ public class XKVisualUI extends Application {
             else
                 nodes[i] = conCircles;
         }*/
-        
-        func.blendWithGrad(root, cc1, dc1, cc2, conCircles);
+        WaveForm wav = new WaveForm();
 
-        
-        pane.getChildren().addAll(root);
-        
-
+        //func.blendWithGrad(root, cc1, dc1, cc2, conCircles);
+        Group wave = wav.Waveform(pane, mediaPlayer);
+        func.circlePath(conCircles);
 
         borderPane.setCenter(pane);
-        System.out.println(borderPane.getCenter().getBoundsInLocal());
         borderPane.setBottom(addToolBar());
 
         borderPane.setStyle("-fx-background-color: Black");
@@ -148,6 +148,26 @@ public class XKVisualUI extends Application {
             mediaPlayer.stop();
             restart(stage);
         });
+
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+            @Override
+            public void run() {
+                //Do some stuff in another thread
+                Platform.runLater(new Runnable() {
+                    public void run() {
+                        func.blendWithGrad(root, cc1, dc1, conCircles, wave);
+                        pane.getChildren().clear();
+                        pane.getChildren().add(root);
+                    }
+                });
+            }
+        },
+                0, 15000
+        );
+
+        
+
     }
 
     private HBox addToolBar() {
@@ -194,8 +214,6 @@ public class XKVisualUI extends Application {
     private void buttonFunctionality() {
         playButton.setOnAction((ActionEvent e) -> {
             mediaPlayer.play();
-            System.out.println(mediaPlayer.getAudioSpectrumThreshold());
-            System.out.println(mediaPlayer.getAudioSpectrumListener());
         });
 
         pauseButton.setOnAction((ActionEvent e) -> {
@@ -296,12 +314,13 @@ public class XKVisualUI extends Application {
             }
         }
     }
-   
-    private class SpectrumListener implements AudioSpectrumListener {  
-        
-     @Override  
-     public void spectrumDataUpdate(double timestamp, double duration,   
-        float[] magnitudes, float[] phases) {}
-    }  
-    
+
+    private class SpectrumListener implements AudioSpectrumListener {
+
+        @Override
+        public void spectrumDataUpdate(double timestamp, double duration,
+                float[] magnitudes, float[] phases) {
+        }
     }
+
+}
