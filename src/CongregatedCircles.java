@@ -23,19 +23,19 @@ public class CongregatedCircles extends Group {
                 new KeyFrame(Duration.ZERO, new KeyValue(super.translateXProperty(), 0),
                         new KeyValue(super.translateYProperty(), 0),
                         new KeyValue(super.opacityProperty(), 0)),
-                new KeyFrame(new Duration(5000), 
-                    new KeyValue(super.opacityProperty(), 1)),
-                new KeyFrame(new Duration(10000), // set end position at 40s
-                        new KeyValue(super.translateXProperty(), (random() - .5) * 500),
-                        new KeyValue(super.translateYProperty(), (random() - .5) * 500),
+                new KeyFrame(new Duration(2500), 
+                    new KeyValue(super.opacityProperty(), .5)),
+                new KeyFrame(new Duration(5000), // set end position at 40s
+                        new KeyValue(super.translateXProperty(), (random() - .5) * 50),
+                        new KeyValue(super.translateYProperty(), (random() - .5) * 50),
                         new KeyValue(super.opacityProperty(), 0),
-                        new KeyValue(super.fillProperty(), Color.DARKSALMON))
+                        new KeyValue(super.fillProperty(), Color.WHITE))
         );
 
-        RandomCircle(double x, double y) {
-            super(x * 1000, y * 600, 80, Color.web("blue", 0.15));
+        RandomCircle(double x, double y, double radius, Color color) {
+            super(x * 1400, y * 600, radius, color);
             super.setStrokeType(StrokeType.OUTSIDE);
-            super.setStroke(Color.web("white", 0.75));
+            super.setStroke(Color.web("white", 0.4));
             super.setStrokeWidth(4);
         }
 
@@ -43,7 +43,7 @@ public class CongregatedCircles extends Group {
 
     private Group circles = new Group();
 
-    public CongregatedCircles() {
+    public CongregatedCircles(double radius, Color color) {
         Timeline animationGenerator = new Timeline(
                 new KeyFrame(Duration.seconds(10), new EventHandler<ActionEvent>() {
                     @Override
@@ -52,24 +52,17 @@ public class CongregatedCircles extends Group {
                         
                         double randomX = random();
                         double randomY = random();
-                        animateCircles(randomX, randomY);
+
                     }
                 }
                 )
         );
-
+        
         double randomX = random();
         double randomY = random();
-        animationGenerator.setCycleCount(Timeline.INDEFINITE);
-        this.animateCircles(randomX, randomY);
-        animationGenerator.play();
-
-    }
-
-    public void animateCircles(double x, double y) {
-
-        for (int i = 0; i < 20; i++) {
-            RandomCircle randomCircle = new RandomCircle(x, y);
+        
+        for (int i = 0; i < 8; i++) {
+            RandomCircle randomCircle = new RandomCircle(randomX, randomY, radius, color);
             //setBoundaries(pane, randomCircle);
             getChildren().add(randomCircle);
             randomCircle.animation.play();

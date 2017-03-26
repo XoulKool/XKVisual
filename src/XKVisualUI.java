@@ -6,64 +6,38 @@
 
 import java.io.File;
 import static java.lang.Math.floor;
-import static java.lang.Math.random;
 import static java.lang.String.format;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import javafx.animation.Interpolator;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.animation.PathTransition;
-import javafx.animation.Timeline;
+import java.util.Random;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import static javafx.application.Platform.runLater;
 import javafx.beans.Observable;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.effect.BlendMode;
-import javafx.scene.effect.BoxBlur;
-import javafx.scene.effect.DropShadow;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.MenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.media.AudioSpectrumListener;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
-import static javafx.scene.paint.Color.color;
-import javafx.scene.paint.CycleMethod;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
-import javafx.scene.shape.ArcTo;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.ClosePath;
-import javafx.scene.shape.CubicCurveTo;
-import javafx.scene.shape.MoveTo;
-import javafx.scene.shape.Path;
-import javafx.scene.shape.PathBuilder;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.StrokeType;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javax.swing.JComboBox;
 
 /**
  *
@@ -75,11 +49,18 @@ public class XKVisualUI extends Application {
     private Label time;
     Duration duration;
     Button playButton, pauseButton, stopButton, fileOpenButton, fullScreenButton;
+    MenuButton modeSelect, animationSelect;
+    MenuItem runByAudio, runByTime, runByUser, ConcentricAnim, CongregAnim, WaveAnim;
+
     Scene scene;
     Media media;
     double width;
     double height;
     MediaView mediaView;
+
+    Pane pane;
+
+    Group root, wave, conCircles;
 
     @Override
     public void start(Stage primaryStage) {
@@ -99,30 +80,52 @@ public class XKVisualUI extends Application {
 
         BorderPane borderPane = new BorderPane();
 
-        Group root = new Group();
-        Pane pane = new Pane();
-        pane.setPrefSize(800, 600);
-        Rectangle rect = new Rectangle(1000, 600);
-        rect.setFill(Color.BLUE);
+        root = new Group();
+        pane = new Pane();
 
-        ConcentricGenerator conCircles = new ConcentricGenerator();
-        CongregatedCircles cc1 = new CongregatedCircles();
-        DispersedCircles dc1 = new DispersedCircles();
-        CongregatedCircles cc2 = new CongregatedCircles();
+        wave = new Group();
+        conCircles = new Group();
 
-        /*Node[] nodes = new Node[2];
-        
-        for(int i = 0; i < nodes.length; i ++){
-            if(i == 0){
-                nodes[i] = bc;
-            }
-            else
-                nodes[i] = conCircles;
-        }*/
-        WaveForm wav = new WaveForm();
+        mediaPlayer.setAudioSpectrumListener(
+                (double timestamp,
+                        double duration,
+                        float[] magnitudes,
+                        float[] phases) -> {
+                    wave.getChildren().clear();
+                    int i = 0;
+                    int x = 20;
 
-        //func.blendWithGrad(root, cc1, dc1, cc2, conCircles);
-        Group wave = wav.Waveform(pane, mediaPlayer);
+                    double y = pane.getHeight() + 10;
+                    Random rand = new Random(System.currentTimeMillis());
+                    // Build random colored circles
+                    for (int j = 0; j < 64; j++) {
+                        Circle circle = new Circle(15);
+                        circle.setCenterX(x + i);
+                        circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 4)));
+                        circle.setFill(Color.web("white", .3));
+                        wave.getChildren().add(circle);
+                        i += 21;
+                    }
+                    i = 0;
+                    for (int j = 0; j < 64; j++) {
+                        Circle circle = new Circle(15);
+                        circle.setCenterX(pane.getWidth() - i - 20);
+                        circle.setCenterY((magnitudes[j] + 60) * 4);
+                        circle.setFill(Color.web("white", .3));
+                        wave.getChildren().add(circle);
+                        i += 21;
+                    }
+                    if ((magnitudes[2] + 60) * 4 > 120) {
+                        root.getChildren().add(new CongregatedCircles(30, Color.web("blue", 0.1)));
+                    } else if ((magnitudes[0] + 60) * 4 > 120) {
+                        root.getChildren().add(new CongregatedCircles(60, Color.web("red", 0.1)));
+                        conCircles.getChildren().add(new ConcentricGenerator((magnitudes[0] + 60) * 12));
+
+                    } else if ((magnitudes[40] + 60) * 4 > 30) {
+                        root.getChildren().add(new CongregatedCircles(60, Color.web("yellow", 0.1)));
+                    }
+                }
+        );
         func.circlePath(conCircles);
 
         borderPane.setCenter(pane);
@@ -149,25 +152,22 @@ public class XKVisualUI extends Application {
             restart(stage);
         });
 
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-            @Override
-            public void run() {
-                //Do some stuff in another thread
-                Platform.runLater(new Runnable() {
-                    public void run() {
-                        func.blendWithGrad(root, cc1, dc1, conCircles, wave);
-                        pane.getChildren().clear();
-                        pane.getChildren().add(root);
-                    }
-                });
-            }
-        },
-                0, 15000
-        );
-
-        
-
+        /*new java.util.Timer().schedule(
+                                new java.util.TimerTask() {
+                            @Override
+                            public void run() {
+                                //Do some stuff in another thread
+                                Platform.runLater(new Runnable() {
+                                    public void run() {
+                                        func.blendWithGrad(root, wav);
+                                        pane.getChildren().clear();
+                                        pane.getChildren().add(root);
+                                    }
+                                });
+                            }
+                        },
+                                0, 15000
+                        );*/
     }
 
     private HBox addToolBar() {
@@ -190,9 +190,21 @@ public class XKVisualUI extends Application {
         XKButtonSetup(fileOpenButton, "/Icons/OpenFile.png");
         XKButtonSetup(fullScreenButton, "/Icons/FullScreen.png");
 
+        //Setup for First Menu Button
+        runByAudio = new MenuItem("Run By Audio");
+        runByTime = new MenuItem("Run By Time");
+        runByUser = new MenuItem("Run By User");
+        modeSelect = new MenuButton("Mode Select", null, runByAudio, runByTime, runByUser);
+
+        //Setup for Second Menu Button
+        ConcentricAnim = new MenuItem("Concentric Circle Animation");
+        CongregAnim = new MenuItem("Congregated Circles Animation");
+        WaveAnim = new MenuItem("Waveform Animation");
+        animationSelect = new MenuButton("Animation Select", null, ConcentricAnim, CongregAnim, WaveAnim);
+
         buttonFunctionality();
 
-        toolBar.getChildren().addAll(playButton, pauseButton, stopButton, fileOpenButton, time, fullScreenButton);
+        toolBar.getChildren().addAll(playButton, pauseButton, stopButton, fileOpenButton, time, fullScreenButton, modeSelect, animationSelect);
 
         return toolBar;
     }
@@ -209,6 +221,16 @@ public class XKVisualUI extends Application {
         button.addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent e) -> {
             button.setStyle("-fx-background-color: Black");
         });
+    }
+
+    private void XKMenuButtonSetup(MenuButton menuButton, String menuButtonName, String... menuItemNames) {
+        MenuItem[] menuItems = new MenuItem[menuItemNames.length];
+
+        for (int i = 0; i < menuItems.length; i++) {
+            menuItems[i] = new MenuItem(menuItemNames[i]);
+        }
+
+        menuButton = new MenuButton(menuButtonName, null, menuItems);
     }
 
     private void buttonFunctionality() {
@@ -239,7 +261,6 @@ public class XKVisualUI extends Application {
         mediaPlayer.setAutoPlay(true);
         mediaView = new MediaView(mediaPlayer);
         mediaView.setMediaPlayer(mediaPlayer);
-        mediaPlayer.setAudioSpectrumListener(new SpectrumListener());
         initializeTimeLabel();
     }
 
@@ -315,11 +336,65 @@ public class XKVisualUI extends Application {
         }
     }
 
-    private class SpectrumListener implements AudioSpectrumListener {
+    private class ModeStateContext {
 
-        @Override
-        public void spectrumDataUpdate(double timestamp, double duration,
-                float[] magnitudes, float[] phases) {
+        private ModeState modeState;
+
+        ModeStateContext() {
+
+        }
+    }
+
+    private class RunByAudio implements ModeState {
+
+        public void setXKListener(MediaPlayer mediaPlayer, Group root) {
+            mediaPlayer.setAudioSpectrumListener(
+                    (double timestamp,
+                            double duration,
+                            float[] magnitudes,
+                            float[] phases) -> {
+                        wave.getChildren().clear();
+                        int i = 0;
+                        int x = 20;
+
+                        double y = pane.getHeight() + 10;
+                        Random rand = new Random(System.currentTimeMillis());
+                        // Build random colored circles
+                        for (int j = 0; j < 64; j++) {
+                            Circle circle = new Circle(15);
+                            circle.setCenterX(x + i);
+                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 4)));
+                            circle.setFill(Color.web("white", .3));
+                            wave.getChildren().add(circle);
+                            i += 21;
+                        }
+                        i = 0;
+                        for (int j = 0; j < 64; j++) {
+                            Circle circle = new Circle(15);
+                            circle.setCenterX(pane.getWidth() - i - 20);
+                            circle.setCenterY((magnitudes[j] + 60) * 4);
+                            circle.setFill(Color.web("white", .3));
+                            wave.getChildren().add(circle);
+                            i += 21;
+                        }
+                        if ((magnitudes[2] + 60) * 4 > 120) {
+                            root.getChildren().add(new CongregatedCircles(30, Color.web("blue", 0.1)));
+                        } else if ((magnitudes[0] + 60) * 4 > 120) {
+                            root.getChildren().add(new CongregatedCircles(60, Color.web("red", 0.1)));
+                            conCircles.getChildren().add(new ConcentricGenerator((magnitudes[0] + 60) * 12));
+
+                        } else if ((magnitudes[40] + 60) * 4 > 30) {
+                            root.getChildren().add(new CongregatedCircles(60, Color.web("yellow", 0.1)));
+                        }
+                    }
+            );
+
+            UsefulFunctions func = new UsefulFunctions();
+
+            func.circlePath(conCircles);
+
+            func.blendWithGrad(root, conCircles, wave);
+            pane.getChildren().add(root);
         }
     }
 

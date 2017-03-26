@@ -22,18 +22,18 @@ public class WaveForm {
                     double y = pane.getHeight() / 2;
                     Random rand = new Random(System.currentTimeMillis());
                     // Build random colored circles
-                    for (float phase : phases) {
-                        int red = rand.nextInt(255);
-                        int green = rand.nextInt(255);
-                        int blue = rand.nextInt(255);
+                    for (int j = 0; j < 64; j++) {
                         Circle circle = new Circle(15);
                         circle.setCenterX(x + i);
-                        circle.setCenterY(y + (phase * 50));
+                        circle.setCenterY(y + ((-1 * (magnitudes[j] + 60)) * 5));
                         circle.setEffect(new Glow(1.0));
                         circle.setFill(Color.web("white", .16));
                         vizContainer.getChildren().add(circle);
-                        i += 10;
+                        i += 20;
                     }
+
+                    //System.out.println(phases[54]);
+                    System.out.println(magnitudes[42]);
                 });
         return vizContainer;
     }

@@ -108,7 +108,7 @@ public class UsefulFunctions {
         pathTransition.setCycleCount(Timeline.INDEFINITE);
         pathTransition.setInterpolator(Interpolator.LINEAR);
         pathTransition.setAutoReverse(false);
-        pathTransition.setRate(.5);
+        pathTransition.setRate(.25);
         pathTransition.play();
     }
 
