@@ -1,3 +1,3 @@
 public interface ModeState {
-        public void setXKListener(XKVisualUI.ModeStateContext modeStateContext);
+        public void setXKModeListener(XKVisualUI.ModeStateContext modeStateContext);
 }
