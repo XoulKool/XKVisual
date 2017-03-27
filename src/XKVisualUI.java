@@ -152,10 +152,19 @@ public class XKVisualUI extends Application {
         });
 
         ModeStateContext modeStateContext = new ModeStateContext();
+        AnimationStateContext animationStateContext = new AnimationStateContext();
 
         runByAudio.setOnAction((ActionEvent e) -> {
             RunByAudioMode runByAudioMode = new RunByAudioMode();
             runByAudioMode.setXKListener(modeStateContext);
+        });
+        
+        ConcentricAnim.setOnAction((ActionEvent e) -> {
+            if(!modeStateContext.isMode("RunByUser")){
+                System.out.println("You cannot select an animation if you are not in Run By User mode!");
+                return;
+            }
+                
         });
 
         /*new java.util.Timer().schedule(
@@ -335,14 +344,24 @@ public class XKVisualUI extends Application {
     class ModeStateContext {
 
         private ModeState modeState;
+        private String modeName;
 
         ModeStateContext() {
             modeState = new RunByAudioMode();
             modeState.setXKListener(this);
         }
 
-        public void setState(ModeState newModeState) {
+        public void setMode(ModeState newModeState, String newModeName) {
             this.modeState = newModeState;
+            this.modeName = newModeName;
+        }
+        
+        public ModeState getModeState(){
+            return modeState;
+        }
+        
+        public boolean isMode(String checkModeName){
+            return checkModeName.equalsIgnoreCase(this.modeName);
         }
     }
 
@@ -350,7 +369,7 @@ public class XKVisualUI extends Application {
 
         public void setXKListener(ModeStateContext modeStateContext) {
 
-            modeStateContext.setState(this);
+            modeStateContext.setMode(this, "RunByAudio");
 
             pane.getChildren().clear();//Clean slate before Button is hit
 
@@ -402,6 +421,129 @@ public class XKVisualUI extends Application {
             func.blendWithGrad(root, conCircles, wave);
             pane.getChildren().add(root);
         }
+    }
+
+    class AnimationStateContext {
+
+        private AnimationState animationState;
+
+        AnimationStateContext() {
+            animationState = null;
+        }
+
+        public void setAnimationState(AnimationState newAnimationState) {
+            this.animationState = newAnimationState;
+        }
+        
+        public AnimationState getAnimationState(){
+            return animationState;
+        }
+        
+        public boolean isAnimationState(AnimationState someAnimationState){
+            return this.animationState.equals(someAnimationState);
+        }
+    }
+
+    class ConcentricGeneratorAnimation implements AnimationState {
+
+        public void setXKAnimationListener(AnimationStateContext animationStateContext) {
+            animationStateContext.setAnimationState(this);
+
+            pane.getChildren().clear();
+            //Clean slate before Button is hit
+
+            mediaPlayer.setAudioSpectrumListener(
+                    (double timestamp,
+                            double duration,
+                            float[] magnitudes,
+                            float[] phases) -> {
+                        wave.getChildren().clear();
+                        int i = 0;
+                        int x = 20;
+
+                        double y = pane.getHeight() + 10;
+                        Random rand = new Random(System.currentTimeMillis());
+                        // Build random colored circles
+                        for (int j = 0; j < 64; j++) {
+                            Circle circle = new Circle(15);
+                            circle.setCenterX(x + i);
+                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 4)));
+                            circle.setFill(Color.web("white", .3));
+                            wave.getChildren().add(circle);
+                            i += 21;
+                        }
+                        i = 0;
+                        for (int j = 0; j < 64; j++) {
+                            Circle circle = new Circle(15);
+                            circle.setCenterX(pane.getWidth() - i - 20);
+                            circle.setCenterY((magnitudes[j] + 60) * 4);
+                            circle.setFill(Color.web("white", .3));
+                            wave.getChildren().add(circle);
+                            i += 21;
+                        }
+                        if ((magnitudes[0] + 60) * 4 > 120) {
+                            conCircles.getChildren().add(new ConcentricGenerator((magnitudes[0] + 60) * 12));
+                        }
+                    }
+            );
+
+            UsefulFunctions func = new UsefulFunctions();
+
+            func.blendWithGrad(root, conCircles);
+
+            pane.getChildren().add(root);
+
+        }
+    }
+
+    class WaveformAnimation implements AnimationState {
+
+        public void setXKAnimationListener(AnimationStateContext animationStateContext) {
+            animationStateContext.setAnimationState(this);
+
+            pane.getChildren().clear();
+            //Clean slate before Button is hit
+
+            mediaPlayer.setAudioSpectrumListener(
+                    (double timestamp,
+                            double duration,
+                            float[] magnitudes,
+                            float[] phases) -> {
+                        wave.getChildren().clear();
+                        int i = 0;
+                        int x = 20;
+
+                        double y = pane.getHeight() + 10;
+                        Random rand = new Random(System.currentTimeMillis());
+                        // Build random colored circles
+                        for (int j = 0; j < 64; j++) {
+                            Circle circle = new Circle(15);
+                            circle.setCenterX(x + i);
+                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 4)));
+                            circle.setFill(Color.web("white", .3));
+                            wave.getChildren().add(circle);
+                            i += 21;
+                        }
+                        i = 0;
+                        for (int j = 0; j < 64; j++) {
+                            Circle circle = new Circle(15);
+                            circle.setCenterX(pane.getWidth() - i - 20);
+                            circle.setCenterY((magnitudes[j] + 60) * 4);
+                            circle.setFill(Color.web("white", .3));
+                            wave.getChildren().add(circle);
+                            i += 21;
+                        }
+                    }
+            );
+
+            UsefulFunctions func = new UsefulFunctions();
+
+            func.blendWithGrad(root, wave);
+
+            pane.getChildren().add(root);
+
+        }
+
     }
 
 }
