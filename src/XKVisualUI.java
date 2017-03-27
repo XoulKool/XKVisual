@@ -86,7 +86,7 @@ public class XKVisualUI extends Application {
         wave = new Group();
         conCircles = new Group();
 
-        mediaPlayer.setAudioSpectrumListener(
+        /*mediaPlayer.setAudioSpectrumListener(
                 (double timestamp,
                         double duration,
                         float[] magnitudes,
@@ -126,8 +126,7 @@ public class XKVisualUI extends Application {
                     }
                 }
         );
-        func.circlePath(conCircles);
-
+        func.circlePath(conCircles);*/
         borderPane.setCenter(pane);
         borderPane.setBottom(addToolBar());
 
@@ -150,6 +149,13 @@ public class XKVisualUI extends Application {
         fileOpenButton.setOnAction((ActionEvent e) -> {
             mediaPlayer.stop();
             restart(stage);
+        });
+
+        ModeStateContext modeStateContext = new ModeStateContext();
+
+        runByAudio.setOnAction((ActionEvent e) -> {
+            RunByAudioMode runByAudioMode = new RunByAudioMode();
+            runByAudioMode.setXKListener(modeStateContext);
         });
 
         /*new java.util.Timer().schedule(
@@ -221,16 +227,6 @@ public class XKVisualUI extends Application {
         button.addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent e) -> {
             button.setStyle("-fx-background-color: Black");
         });
-    }
-
-    private void XKMenuButtonSetup(MenuButton menuButton, String menuButtonName, String... menuItemNames) {
-        MenuItem[] menuItems = new MenuItem[menuItemNames.length];
-
-        for (int i = 0; i < menuItems.length; i++) {
-            menuItems[i] = new MenuItem(menuItemNames[i]);
-        }
-
-        menuButton = new MenuButton(menuButtonName, null, menuItems);
     }
 
     private void buttonFunctionality() {
@@ -336,18 +332,28 @@ public class XKVisualUI extends Application {
         }
     }
 
-    private class ModeStateContext {
+    class ModeStateContext {
 
         private ModeState modeState;
 
         ModeStateContext() {
+            modeState = new RunByAudioMode();
+            modeState.setXKListener(this);
+        }
 
+        public void setState(ModeState newModeState) {
+            this.modeState = newModeState;
         }
     }
 
-    private class RunByAudio implements ModeState {
+    class RunByAudioMode implements ModeState {
 
-        public void setXKListener(MediaPlayer mediaPlayer, Group root) {
+        public void setXKListener(ModeStateContext modeStateContext) {
+
+            modeStateContext.setState(this);
+
+            pane.getChildren().clear();//Clean slate before Button is hit
+
             mediaPlayer.setAudioSpectrumListener(
                     (double timestamp,
                             double duration,
