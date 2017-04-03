@@ -1,15 +1,11 @@
 
 import static java.lang.Math.random;
-import java.util.Random;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Bounds;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
@@ -44,19 +40,6 @@ public class CongregatedCircles extends Group {
     private Group circles = new Group();
 
     public CongregatedCircles(double radius, Color color) {
-        Timeline animationGenerator = new Timeline(
-                new KeyFrame(Duration.seconds(10), new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent event) {
-                        UsefulFunctions func = new UsefulFunctions();
-                        
-                        double randomX = random();
-                        double randomY = random();
-
-                    }
-                }
-                )
-        );
         
         double randomX = random();
         double randomY = random();
@@ -81,19 +64,4 @@ public class CongregatedCircles extends Group {
         }
 
     }
-
-    /*public void startPlaying() {
-        animationGenerator.play();
-    }
-
-    public void stopPlaying() {
-        animationGenerator.stop();
-    }
-
-    /*EventHandler onFinished = new EventHandler<ActionEvent>() {
-         public void handle(ActionEvent t) {
-         group.getChildren().remove(blendModeGroup);
-         animation(group);
-         }
-         };*/
 }

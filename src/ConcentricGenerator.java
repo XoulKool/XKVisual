@@ -31,15 +31,6 @@ public class ConcentricGenerator extends Group {
     private double generatorCenterX = 100.0;
     private double generatorCenterY = 100.0;
 
-    /*private Timeline generate = new Timeline(
-            new KeyFrame(Duration.seconds(1), new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    createRipple();
-                }
-            }
-            )
-    );*/
     public ConcentricGenerator(double radius) {
         //generate.setCycleCount(Timeline.INDEFINITE);
         //generate.setRate(6);
@@ -59,31 +50,6 @@ public class ConcentricGenerator extends Group {
         );
         remover.play();
     }
-
-    /*public void createRipple() {
-        final Ripple ripple = new Ripple(generatorCenterX, generatorCenterY);
-        getChildren().add(ripple);
-        ripple.animation.play();
-
-        Timeline remover = new Timeline(
-                new KeyFrame(Duration.seconds(10), new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent event) {
-                        getChildren().remove(ripple);
-                        ripple.animation.stop();
-                    }
-                })
-        );
-        remover.play();
-    }*/
-
-    /*public void startGenerating() {
-        generate.play();
-    }
-
-    public void stopGenerating() {
-        generate.stop();
-    }*/
     public void setGeneratorCenterX(double generatorCenterX) {
         this.generatorCenterX = generatorCenterX;
     }

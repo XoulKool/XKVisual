@@ -6,7 +6,6 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.effect.BoxBlur;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -97,9 +96,6 @@ public class UsefulFunctions {
     public void circlePath(Node node) {
         UsefulFunctions func = new UsefulFunctions();
         Path path = func.createEllipsePath(1400, 400, 700, 300, 0);
-
-        //path.getElements().add(new MoveTo(50, 50));
-        //path.getElements().add(arcTo);
         PathTransition pathTransition = new PathTransition();
         pathTransition.setDuration(Duration.millis(4000));
         pathTransition.setPath(path);
