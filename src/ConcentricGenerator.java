@@ -32,9 +32,6 @@ public class ConcentricGenerator extends Group {
     private double generatorCenterY = 100.0;
 
     public ConcentricGenerator(double radius) {
-        //generate.setCycleCount(Timeline.INDEFINITE);
-        //generate.setRate(6);
-        //this.startGenerating();
         final Ripple ripple = new Ripple(generatorCenterX, generatorCenterY, radius);
         getChildren().add(ripple);
         ripple.animation.play();

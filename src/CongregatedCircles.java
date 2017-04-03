@@ -20,7 +20,7 @@ public class CongregatedCircles extends Group {
                         new KeyValue(super.translateYProperty(), 0),
                         new KeyValue(super.opacityProperty(), 0)),
                 new KeyFrame(new Duration(2500), 
-                    new KeyValue(super.opacityProperty(), .5)),
+                    new KeyValue(super.opacityProperty(), 1)),
                 new KeyFrame(new Duration(5000), // set end position at 40s
                         new KeyValue(super.translateXProperty(), (random() - .5) * 50),
                         new KeyValue(super.translateYProperty(), (random() - .5) * 50),

@@ -1,3 +1,4 @@
+
 import java.io.File;
 import static java.lang.Math.floor;
 import static java.lang.String.format;
@@ -41,7 +42,6 @@ import javafx.util.Duration;
 public class XKVisualUI extends Application {
 
     //Instantiate Necessary Buttons
-    
     MediaPlayer mediaPlayer;
     private Label time;
     private Duration duration;
@@ -60,6 +60,8 @@ public class XKVisualUI extends Application {
     private final int totalNumberOfAnimations = 3;
 
     private Group root, wave, conCircles;
+
+    UsefulFunctions func = new UsefulFunctions();
 
     @Override
     public void start(Stage primaryStage) {
@@ -131,23 +133,6 @@ public class XKVisualUI extends Application {
             RunByUserMode runByUserMode = new RunByUserMode();
             runByUserMode.setXKModeListener(modeStateContext);
         });
-
-        /*new java.util.Timer().schedule(
-                                new java.util.TimerTask() {
-                            @Override
-                            public void run() {
-                                //Do some stuff in another thread
-                                Platform.runLater(new Runnable() {
-                                    public void run() {
-                                        func.blendWithGrad(root, wav);
-                                        pane.getChildren().clear();
-                                        pane.getChildren().add(root);
-                                    }
-                                });
-                            }
-                        },
-                                0, 15000
-                        );*/
     }
 
     class ModeStateContext {
@@ -223,8 +208,6 @@ public class XKVisualUI extends Application {
                     }
             );
 
-            UsefulFunctions func = new UsefulFunctions();
-
             func.circlePath(conCircles);
 
             func.blendWithGrad(root, conCircles, wave);
@@ -241,7 +224,7 @@ public class XKVisualUI extends Application {
             timer = new Timer();
 
             AnimationStateContext animationStateContext = new AnimationStateContext();
-            
+
             //0 Is concentric generator, 1 is Congregated Circles, 2 is Waveform, etc.
             timer.schedule(
                     new java.util.TimerTask() {
@@ -254,8 +237,6 @@ public class XKVisualUI extends Application {
                             pane.getChildren().clear();
 
                             boolean sameAnimationAlreadyRunning = false;
-
-                            
 
                             do {
 
@@ -396,8 +377,6 @@ public class XKVisualUI extends Application {
                     }
             );
 
-            UsefulFunctions func = new UsefulFunctions();
-
             func.blendWithGrad(root, conCircles);
 
             pane.getChildren().add(root);
@@ -405,12 +384,17 @@ public class XKVisualUI extends Application {
         }
     }
 
+    /**
+     * The CongregatedCirclesAnimation class provides accessibility to the
+     * CongregatedCircles class so that this particular animation can be shown
+     * by itself when in either RunByUser or RunByTime mode.
+     */
     class CongregatedCirclesAnimation implements AnimationState {
 
         public void setXKAnimationListener(AnimationStateContext animationStateContext) {
             animationStateContext.setAnimation(this, "Congregated Circles");
 
-            pane.getChildren().clear();//Clean slate before Button is hit
+            pane.getChildren().clear();//Clean slate Once mode is selected
 
             mediaPlayer.setAudioSpectrumListener(
                     (double timestamp,
@@ -451,8 +435,6 @@ public class XKVisualUI extends Application {
                         }
                     }
             );
-
-            UsefulFunctions func = new UsefulFunctions();
 
             func.circlePath(conCircles);
 
@@ -502,8 +484,6 @@ public class XKVisualUI extends Application {
                         }
                     }
             );
-
-            UsefulFunctions func = new UsefulFunctions();
 
             func.blendWithGrad(root, wave);
 
