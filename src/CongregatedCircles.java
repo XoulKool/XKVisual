@@ -10,9 +10,19 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
 import javafx.util.Duration;
+/**
+ * Class which can be called to create the Congregated Circles animation
+ * 
+ * @author Jason Loux
+ */
 
 public class CongregatedCircles extends Group {
 
+    /**
+     * This subclass provides an animation which changes the color, opacity,
+     * and position of a particular circles over a specified period of time.
+     */
+    
     private class RandomCircle extends Circle {
 
         Timeline animation = new Timeline(
@@ -28,6 +38,17 @@ public class CongregatedCircles extends Group {
                         new KeyValue(super.fillProperty(), Color.WHITE))
         );
 
+        /**
+         * Instantiates a RandomCircle object using the specified parameters.
+         * The x & y provided are multiplied by appropriate numbers to populate
+         * the circles around the specified pane properly.
+         *
+         * @param x
+         * @param y
+         * @param radius
+         * @param color 
+         */
+        
         RandomCircle(double x, double y, double radius, Color color) {
             super(x * 1400, y * 600, radius, color);
             super.setStrokeType(StrokeType.OUTSIDE);
@@ -37,16 +58,26 @@ public class CongregatedCircles extends Group {
 
     }
 
-    private Group circles = new Group();
-
+    /**
+     * The constructor for Congregated Circles calls the RandomCircle subclass 8
+     * different times to create many different circles which emanate from a 
+     * specific focal point.  It also instantiates a remover which cleans up any
+     * leftover animation threads left behind by a particular RandomCircle 
+     * animation.
+     * 
+     * @param radius
+     * @param color 
+     */
+    
     public CongregatedCircles(double radius, Color color) {
+        
+        //Have random places where these circles can congregate
         
         double randomX = random();
         double randomY = random();
         
         for (int i = 0; i < 8; i++) {
             RandomCircle randomCircle = new RandomCircle(randomX, randomY, radius, color);
-            //setBoundaries(pane, randomCircle);
             getChildren().add(randomCircle);
             randomCircle.animation.play();
 
