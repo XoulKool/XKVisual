@@ -36,6 +36,10 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 /**
+ * XKVisualUI.java is the main class for this audio visualizer. It instantiates
+ * all necessary function calls to display to the user different representations
+ * of audio. This audio is read in by Java FX's MediaPlayer class, and is then
+ * controlled by a variety of button and menu selection options.
  *
  * @author Jason Loux
  */
@@ -53,7 +57,8 @@ public class XKVisualUI extends Application {
     private Media media;
     private MediaView mediaView;
 
-    private Timer timer;
+    private Timer runByTimeThread;
+    private Timer runByAudioThread;
 
     private Pane pane;
 
@@ -63,6 +68,8 @@ public class XKVisualUI extends Application {
 
     UsefulFunctions func = new UsefulFunctions();
 
+    private double bassMagnitude;
+
     @Override
     public void start(Stage primaryStage) {
 
@@ -70,10 +77,21 @@ public class XKVisualUI extends Application {
 
     }
 
+    /**
+     * Called to restart the stage for whatever reason
+     *
+     * @param stage
+     */
     public void restart(Stage stage) {
         startXKVisual(stage);
     }
 
+    /**
+     * This function sets the stage for the GUI which will be presented to the
+     * user.
+     *
+     * @param stage
+     */
     public void startXKVisual(Stage stage) {
         initializeMedia();
 
@@ -114,7 +132,7 @@ public class XKVisualUI extends Application {
 
         runByAudio.setOnAction((ActionEvent e) -> {
             if (modeStateContext.isMode("RunByTime")) {
-                timer.cancel();
+                runByTimeThread.cancel();
             }
 
             RunByAudioMode runByAudioMode = new RunByAudioMode();
@@ -128,37 +146,63 @@ public class XKVisualUI extends Application {
 
         runByUser.setOnAction((ActionEvent e) -> {
             if (modeStateContext.isMode("RunByTime")) {
-                timer.cancel();
+                runByTimeThread.cancel();
             }
             RunByUserMode runByUserMode = new RunByUserMode();
             runByUserMode.setXKModeListener(modeStateContext);
         });
+        func.circlePath(conCircles);
     }
 
+    /**
+     * The context which provides functionality to set and get the appropriate
+     * modes.
+     *
+     */
     class ModeStateContext {
 
         private ModeState modeState;
         private String modeName;
 
+        /**
+         * Immediately sets XKVisual to RunByAudio mode to immerse the user into
+         * every created animation.
+         */
         ModeStateContext() {
             modeState = new RunByAudioMode();
             modeState.setXKModeListener(this);
         }
 
+        /**
+         * This provides functionality to change the current running mode given
+         * a new mode state and a new mode name.
+         *
+         * @param newModeState
+         * @param newModeName
+         */
         public void setMode(ModeState newModeState, String newModeName) {
             this.modeState = newModeState;
             this.modeName = newModeName;
         }
 
-        public String getModeState() {
-            return this.modeName;
-        }
-
+        /**
+         * This function tells you with a boolean value whether or not the mode
+         * specified, via a specific String, is running.
+         *
+         * @param checkModeName
+         * @return
+         */
         public boolean isMode(String checkModeName) {
             return checkModeName.equalsIgnoreCase(this.modeName);
         }
     }
 
+    /**
+     * The RunByAudio mode begins by running the waveform animation. It then
+     * schedules a Timing thread which operates every five seconds, updating the
+     * current animation with the right one if certain magnitude specifications
+     * are met.
+     */
     class RunByAudioMode implements ModeState {
 
         public void setXKModeListener(ModeStateContext modeStateContext) {
@@ -167,66 +211,50 @@ public class XKVisualUI extends Application {
 
             pane.getChildren().clear();//Clean slate before Button is hit
 
-            mediaPlayer.setAudioSpectrumListener(
-                    (double timestamp,
-                            double duration,
-                            float[] magnitudes,
-                            float[] phases) -> {
-                        wave.getChildren().clear();
-                        int i = 0;
-                        int x = 20;
+            runByAudioThread = new Timer();
 
-                        double y = pane.getHeight() + 10;
-                        Random rand = new Random(System.currentTimeMillis());
-                        // Build random colored circles
-                        for (int j = 0; j < 64; j++) {
-                            Circle circle = new Circle(15);
-                            circle.setCenterX(x + i);
-                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 4)));
-                            circle.setFill(Color.web("white", .3));
-                            wave.getChildren().add(circle);
-                            i += 21;
-                        }
-                        i = 0;
-                        for (int j = 0; j < 64; j++) {
-                            Circle circle = new Circle(15);
-                            circle.setCenterX(pane.getWidth() - i - 20);
-                            circle.setCenterY((magnitudes[j] + 60) * 4);
-                            circle.setFill(Color.web("white", .3));
-                            wave.getChildren().add(circle);
-                            i += 21;
-                        }
-                        if ((magnitudes[2] + 60) * 4 > 120) {
-                            root.getChildren().add(new CongregatedCircles(30, Color.web("blue", 0.1)));
-                        } else if ((magnitudes[0] + 60) * 4 > 120) {
-                            root.getChildren().add(new CongregatedCircles(60, Color.web("red", 0.1)));
-                            conCircles.getChildren().add(new ConcentricGenerator((magnitudes[0] + 60) * 12));
+            AnimationStateContext animationStateContext = new AnimationStateContext();
 
-                        } else if ((magnitudes[40] + 60) * 4 > 30) {
-                            root.getChildren().add(new CongregatedCircles(60, Color.web("yellow", 0.1)));
+            WaveformAnimation waveformAnimation = new WaveformAnimation();
+            waveformAnimation.setXKAnimationListener(animationStateContext);
+
+            runByAudioThread.schedule(
+                    new java.util.TimerTask() {
+                @Override
+                public void run() {
+                    //Do some stuff in another thread
+                    Platform.runLater(new Runnable() {
+                        public void run() {
+                            System.out.println(bassMagnitude);
+                            if (bassMagnitude > 120) {
+                                ConcentricGeneratorAnimation concentricGeneratorAnimation = new ConcentricGeneratorAnimation();
+                                concentricGeneratorAnimation.setXKAnimationListener(animationStateContext);
+                            }
                         }
-                    }
+                    });
+                }
+            },
+                    2000, 2000
             );
-
-            func.circlePath(conCircles);
-
-            func.blendWithGrad(root, conCircles, wave);
-            pane.getChildren().add(root);
         }
     }
 
+    /**
+     * The RunByTime mode runs by scheduling a thread which runs a random
+     * animation every fifteen seconds. It also takes care to not schedule the
+     * same animation twice.
+     */
     class RunByTimeMode implements ModeState {
 
         public void setXKModeListener(ModeStateContext modeStateContext) {
 
             modeStateContext.setMode(this, "RunByTime");
 
-            timer = new Timer();
+            runByTimeThread = new Timer();
 
             AnimationStateContext animationStateContext = new AnimationStateContext();
 
-            //0 Is concentric generator, 1 is Congregated Circles, 2 is Waveform, etc.
-            timer.schedule(
+            runByTimeThread.schedule(
                     new java.util.TimerTask() {
                 @Override
                 public void run() {
@@ -242,8 +270,6 @@ public class XKVisualUI extends Application {
 
                                 Random random = new Random();
                                 int randomAnimation = random.nextInt(totalNumberOfAnimations) + 1;
-
-                                System.out.println(randomAnimation);
 
                                 if (randomAnimation == 1 && !animationStateContext.isAnimationState("Concentric Circle Generator")) {
                                     sameAnimationAlreadyRunning = false;
@@ -272,6 +298,10 @@ public class XKVisualUI extends Application {
         }
     }
 
+    /**
+     * The RunByUser mode allows the user to select a particular animation they
+     * want to see at run-time/
+     */
     class RunByUserMode implements ModeState {
 
         public void setXKModeListener(ModeStateContext modeStateContext) {
@@ -280,25 +310,28 @@ public class XKVisualUI extends Application {
 
             AnimationStateContext animationStateContext = new AnimationStateContext();
 
+            //Set Concentric Generator animation button
             ConcentricAnim.setOnAction((ActionEvent e) -> {
-                if (!modeStateContext.isMode("RunByUser")) {
+                if (!modeStateContext.isMode("RunByUser")) { //If it's not in this mode nothing should be executed!
                     return;
                 }
                 ConcentricGeneratorAnimation concentricGeneratorAnimation = new ConcentricGeneratorAnimation();
                 concentricGeneratorAnimation.setXKAnimationListener(animationStateContext);
             });
 
+            //Set Waveform Animation button
             WaveAnim.setOnAction((ActionEvent e) -> {
-                if (!modeStateContext.isMode("RunByUser")) {
+                if (!modeStateContext.isMode("RunByUser")) {//If it's not in this mode nothing should be executed!
                     return;
                 }
                 WaveformAnimation waveformAnimation = new WaveformAnimation();
                 waveformAnimation.setXKAnimationListener(animationStateContext);
             });
 
+            //Congregated Circles animation button
             CongregAnim.setOnAction((ActionEvent e) -> {
 
-                if (!modeStateContext.isMode("RunByUser")) {
+                if (!modeStateContext.isMode("RunByUser")) {//If it's not in this mode nothing should be executed!
                     return;
                 }
 
@@ -309,30 +342,52 @@ public class XKVisualUI extends Application {
         }
     }
 
+    /**
+     * This class supplies functionality to XKVisual so that a particular
+     * animation can be selected cleanly and succinctly.
+     */
     class AnimationStateContext {
 
         private AnimationState animationState;
         private String animationName;
 
+        /**
+         * Don't do anything except globals to null when instantiated
+         */
         AnimationStateContext() {
             animationState = null;
             animationName = null;
         }
 
+        /**
+         * Allows a new animation to be selected and carries out necessary
+         * operations to update the global variables.
+         *
+         * @param newAnimationState
+         * @param newAnimationName
+         */
         public void setAnimation(AnimationState newAnimationState, String newAnimationName) {
             this.animationState = newAnimationState;
             this.animationName = newAnimationName;
         }
 
-        public String getAnimationState() {
-            return animationName;
-        }
-
-        public boolean isAnimationState(String animationToBeRan) {
-            return animationToBeRan.equalsIgnoreCase(this.animationName);
+        /**
+         * Reports with a boolean whether or not AnimationModeContext is in the
+         * specified state with a string.
+         *
+         * @param animationToBeRan
+         * @return
+         */
+        public boolean isAnimationState(String checkAnimation) {
+            return checkAnimation.equalsIgnoreCase(this.animationName);
         }
     }
 
+    /**
+     * This class enables functionality and accessibility to the Concentric
+     * Circle generator class so that it can be used with the state design
+     * pattern.
+     */
     class ConcentricGeneratorAnimation implements AnimationState {
 
         public void setXKAnimationListener(AnimationStateContext animationStateContext) {
@@ -347,38 +402,15 @@ public class XKVisualUI extends Application {
                             double duration,
                             float[] magnitudes,
                             float[] phases) -> {
-                        wave.getChildren().clear();
-                        int i = 0;
-                        int x = 20;
 
-                        double y = pane.getHeight() + 10;
-                        Random rand = new Random(System.currentTimeMillis());
-                        // Build random colored circles
-                        for (int j = 0; j < 64; j++) {
-                            Circle circle = new Circle(15);
-                            circle.setCenterX(x + i);
-                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 4)));
-                            circle.setFill(Color.web("white", .3));
-                            wave.getChildren().add(circle);
-                            i += 21;
-                        }
-                        i = 0;
-                        for (int j = 0; j < 64; j++) {
-                            Circle circle = new Circle(15);
-                            circle.setCenterX(pane.getWidth() - i - 20);
-                            circle.setCenterY((magnitudes[j] + 60) * 4);
-                            circle.setFill(Color.web("white", .3));
-                            wave.getChildren().add(circle);
-                            i += 21;
-                        }
+                        bassMagnitude = (magnitudes[0] + 60) * 4;
+
                         if ((magnitudes[0] + 60) * 4 > 120) {
                             conCircles.getChildren().add(new ConcentricGenerator((magnitudes[0] + 60) * 12));
                         }
                     }
             );
-
             func.blendWithGrad(root, conCircles);
-
             pane.getChildren().add(root);
 
         }
@@ -401,30 +433,9 @@ public class XKVisualUI extends Application {
                             double duration,
                             float[] magnitudes,
                             float[] phases) -> {
-                        wave.getChildren().clear();
-                        int i = 0;
-                        int x = 20;
 
-                        double y = pane.getHeight() + 10;
-                        Random rand = new Random(System.currentTimeMillis());
-                        // Build random colored circles
-                        for (int j = 0; j < 64; j++) {
-                            Circle circle = new Circle(15);
-                            circle.setCenterX(x + i);
-                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 4)));
-                            circle.setFill(Color.web("white", .3));
-                            wave.getChildren().add(circle);
-                            i += 21;
-                        }
-                        i = 0;
-                        for (int j = 0; j < 64; j++) {
-                            Circle circle = new Circle(15);
-                            circle.setCenterX(pane.getWidth() - i - 20);
-                            circle.setCenterY((magnitudes[j] + 60) * 4);
-                            circle.setFill(Color.web("white", .3));
-                            wave.getChildren().add(circle);
-                            i += 21;
-                        }
+                        bassMagnitude = (magnitudes[0] + 60) * 4;
+
                         if ((magnitudes[2] + 60) * 4 > 120) {
                             root.getChildren().add(new CongregatedCircles(30, Color.web("blue", 0.1)));
                         } else if ((magnitudes[0] + 60) * 4 > 120) {
@@ -436,14 +447,16 @@ public class XKVisualUI extends Application {
                     }
             );
 
-            func.circlePath(conCircles);
-
             func.blendWithGrad(root);
             pane.getChildren().add(root);
 
         }
     }
 
+    /**
+     * This animation creates a waveform constructed of small circles which
+     * dances to the music being played.
+     */
     class WaveformAnimation implements AnimationState {
 
         public void setXKAnimationListener(AnimationStateContext animationStateContext) {
@@ -459,7 +472,11 @@ public class XKVisualUI extends Application {
                             float[] magnitudes,
                             float[] phases) -> {
                         wave.getChildren().clear();
+
+                        bassMagnitude = (magnitudes[0] + 60) * 4;
+
                         int i = 0;
+
                         int x = 20;
 
                         double y = pane.getHeight() + 10;
@@ -468,7 +485,7 @@ public class XKVisualUI extends Application {
                         for (int j = 0; j < 64; j++) {
                             Circle circle = new Circle(15);
                             circle.setCenterX(x + i);
-                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 4)));
+                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 10)));
                             circle.setFill(Color.web("white", .3));
                             wave.getChildren().add(circle);
                             i += 21;
@@ -477,7 +494,25 @@ public class XKVisualUI extends Application {
                         for (int j = 0; j < 64; j++) {
                             Circle circle = new Circle(15);
                             circle.setCenterX(pane.getWidth() - i - 20);
-                            circle.setCenterY((magnitudes[j] + 60) * 4);
+                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 10)));
+                            circle.setFill(Color.web("white", .3));
+                            wave.getChildren().add(circle);
+                            i += 21;
+                        }
+                        i = 0;
+                        for (int j = 0; j < 64; j++) {
+                            Circle circle = new Circle(15);
+                            circle.setCenterX(pane.getWidth() - i - 20);
+                            circle.setCenterY((magnitudes[j] + 60) * 10);
+                            circle.setFill(Color.web("white", .3));
+                            wave.getChildren().add(circle);
+                            i += 21;
+                        }
+                        i = 0;
+                        for (int j = 0; j < 64; j++) {
+                            Circle circle = new Circle(15);
+                            circle.setCenterX(x + i);
+                            circle.setCenterY((magnitudes[j] + 60) * 10);
                             circle.setFill(Color.web("white", .3));
                             wave.getChildren().add(circle);
                             i += 21;
@@ -493,6 +528,12 @@ public class XKVisualUI extends Application {
 
     }
 
+    /**
+     * This function takes care of setting up the toolbar at the bottom of the
+     * XKVisual UI.
+     *
+     * @return
+     */
     private HBox addToolBar() {
         HBox toolBar = new HBox();
         toolBar.setPadding(new Insets(20));
@@ -507,6 +548,7 @@ public class XKVisualUI extends Application {
         fileOpenButton = new Button();
         fullScreenButton = new Button();
 
+        //Setup Buttons with Icons
         XKButtonSetup(playButton, "/Icons/Play.png");
         XKButtonSetup(pauseButton, "/Icons/Pause.png");
         XKButtonSetup(stopButton, "/Icons/Stop.png");
@@ -532,6 +574,15 @@ public class XKVisualUI extends Application {
         return toolBar;
     }
 
+    /**
+     * A sort of Factory pattern. Since all icon buttons basically need the
+     * exact same setup and are instantiated the same way, I created a function
+     * to setup a particular button given only the button and a string denoting
+     * the path of your Icon image on your computer.
+     *
+     * @param button
+     * @param imagePath
+     */
     private void XKButtonSetup(Button button, String imagePath) {
         Image buttonImage = new Image(getClass().getResourceAsStream(imagePath));
         button.setGraphic(new ImageView(buttonImage));
@@ -546,6 +597,11 @@ public class XKVisualUI extends Application {
         });
     }
 
+    /**
+     * This function provides functionality to each non-OpenFile Icon button.
+     * The MediaPlayer class' play and pause methods made these particular
+     * buttons easy to provide functionality to.
+     */
     private void buttonFunctionality() {
         playButton.setOnAction((ActionEvent e) -> {
             mediaPlayer.play();
@@ -561,6 +617,11 @@ public class XKVisualUI extends Application {
 
     }
 
+    /**
+     * This function provides the ability to access a particular .mp3 file by
+     * utilizing java's FileChooser class.
+     *
+     */
     private void initializeMedia() {
 
         FileChooser fc = new FileChooser();
@@ -577,6 +638,12 @@ public class XKVisualUI extends Application {
         initializeTimeLabel();
     }
 
+    /**
+     * This function initializes the java Label which keeps track of the time
+     * and duration of the currently selected media. This works by implementing
+     * an observer pattern and updating the values within this label based off
+     * of the point in time where the MediaPlayer is in a particular song.
+     */
     private void initializeTimeLabel() {
         time = new Label();
         time.setTextFill(Color.YELLOW);
@@ -601,6 +668,9 @@ public class XKVisualUI extends Application {
         });
     }
 
+    /**
+     * Used in conjuction with the listener in the initializeTimeLabel
+     */
     protected void updateValues() {
         if (time != null) {
             runLater(() -> {
@@ -610,6 +680,14 @@ public class XKVisualUI extends Application {
         }
     }
 
+    /**
+     * Formats the Duration type given in the updateValues function into a
+     * meaningful minute/seconds representation.
+     *
+     * @param elapsed
+     * @param duration
+     * @return
+     */
     private String formatTime(Duration elapsed, Duration duration) {
         int intElapsed = (int) floor(elapsed.toSeconds());
         int elapsedHours = intElapsed / (60 * 60);

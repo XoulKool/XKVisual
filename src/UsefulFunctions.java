@@ -18,12 +18,19 @@ import javafx.scene.shape.PathBuilder;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
+/**
+ * This class provides some extra functionality that I decided to leave out of
+ * XKViusalUI.java. 
+ * 
+ * @author Jason Loux
+ */
+
 public class UsefulFunctions {
 
-    int counter = 0;
+    int counter = 0; //A global counter used for modding out the gradients.
 
-    Rectangle colors;
-
+    //Construction of multiple gradients which are used for the program
+    
     LinearGradient grad1 = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
         new Stop(0, Color.web("green")),
         new Stop(0.14, Color.web("turquoise")),
@@ -40,15 +47,26 @@ public class UsefulFunctions {
         new Stop(0.71, Color.web("FireBrick")),
         new Stop(1, Color.web("DarkRed")),});
 
-    public Path createEllipsePath(double centerX, double centerY, double radiusX, double radiusY, double rotate) {
+    /**
+     * This function instantiates an ellipsoidal path based on the following 
+     * parameters and returns this path to be used to any Group or animation
+     * which utilizes it.
+     *
+     * @param centerX
+     * @param centerY
+     * @param radiusX
+     * @param radiusY
+     * @return 
+     */
+    
+    public Path createEllipsePath(double centerX, double centerY, double radiusX, double radiusY) {
         ArcTo arcTo = new ArcTo();
-        arcTo.setX(centerX - radiusX + 1); // to simulate a full 360 degree celcius circle.
+        arcTo.setX(centerX - radiusX + 1);
         arcTo.setY(centerY - radiusY);
         arcTo.setSweepFlag(false);
         arcTo.setLargeArcFlag(true);
         arcTo.setRadiusX(radiusX);
         arcTo.setRadiusY(radiusY);
-        arcTo.setXAxisRotation(rotate);
 
         Path path = PathBuilder.create()
                 .elements(
@@ -58,8 +76,19 @@ public class UsefulFunctions {
                 .build();
         return path;
     }
+    
+    /**
+     * This function blends all passed Groups, Nodes, and Animations to one of
+     * the gradients defined.  It applies these gradients sequentially, and in
+     * order of when they are selected.
+     * 
+     * @param root
+     * @param varargs 
+     */
 
     public void blendWithGrad(Group root, Node... varargs) {
+        
+        Rectangle colors;
 
         if (counter % 2 == 0) {
 
@@ -81,8 +110,7 @@ public class UsefulFunctions {
             }
         }
 
-        Group blendModeGroup
-                = new Group(newargs);
+        Group blendModeGroup = new Group(newargs);
         colors.setBlendMode(BlendMode.OVERLAY);
         root.getChildren().add(blendModeGroup);
 
@@ -92,10 +120,15 @@ public class UsefulFunctions {
         counter++;
 
     }
+    
+    /**
+     * Applies the createEllipsePath function to any given animation or node
+     * 
+     * @param node 
+     */
 
     public void circlePath(Node node) {
-        UsefulFunctions func = new UsefulFunctions();
-        Path path = func.createEllipsePath(1400, 400, 700, 300, 0);
+        Path path = createEllipsePath(1400, 400, 700, 300);
         PathTransition pathTransition = new PathTransition();
         pathTransition.setDuration(Duration.millis(4000));
         pathTransition.setPath(path);
