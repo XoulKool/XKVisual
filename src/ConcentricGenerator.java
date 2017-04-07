@@ -19,6 +19,10 @@ public class ConcentricGenerator extends Group {
      * passed by the main method. The animation associated with one ripple
      * shrinks the circle.
      */
+    
+    private final Duration animationLength = Duration.seconds(3);//Length of each Ripple
+    private final int radiusMultiplier = 2; //Starting size of each ripple
+    
     private class Ripple extends Circle {
 
         Timeline animation; //The animation associated with each Ripple
@@ -36,12 +40,12 @@ public class ConcentricGenerator extends Group {
         private Ripple(double centerX, double centerY, double radius) {
             super(centerX, centerY, 0, null);
             setStroke(Color.web("white", .5));
-            setStrokeWidth(2);
+            setStrokeWidth(20);
             animation = new Timeline(
-                    new KeyFrame(Duration.ZERO, new KeyValue(radiusProperty(), radius)),
-                    new KeyFrame(Duration.seconds(1), new KeyValue(opacityProperty(), 100)),
-                    new KeyFrame(Duration.seconds(5), new KeyValue(radiusProperty(), 0)),
-                    new KeyFrame(Duration.seconds(5), new KeyValue(opacityProperty(), 0))
+                    new KeyFrame(Duration.ZERO, new KeyValue(radiusProperty(), radius * radiusMultiplier)),
+                    new KeyFrame(Duration.ZERO, new KeyValue(opacityProperty(), 100)),
+                    new KeyFrame(animationLength, new KeyValue(radiusProperty(), 0)),
+                    new KeyFrame(animationLength, new KeyValue(opacityProperty(), 0))
             );
         }
     }
@@ -65,7 +69,7 @@ public class ConcentricGenerator extends Group {
         ripple.animation.play();
 
         Timeline remover = new Timeline(
-                new KeyFrame(Duration.seconds(5), new EventHandler<ActionEvent>() {
+                new KeyFrame(animationLength, new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent event) {
                         getChildren().remove(ripple);

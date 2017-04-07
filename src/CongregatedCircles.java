@@ -23,15 +23,18 @@ public class CongregatedCircles extends Group {
      * and position of a particular circles over a specified period of time.
      */
     
+    private final Duration animationLength = Duration.seconds(5); //Length of Animation
+    private final int numberOfCircles = 8; //Number of circles at each congregation
+    
     private class RandomCircle extends Circle {
 
         Timeline animation = new Timeline(
                 new KeyFrame(Duration.ZERO, new KeyValue(super.translateXProperty(), 0),
                         new KeyValue(super.translateYProperty(), 0),
                         new KeyValue(super.opacityProperty(), 0)),
-                new KeyFrame(new Duration(2500), 
+                new KeyFrame(animationLength.divide(2), 
                     new KeyValue(super.opacityProperty(), 1)),
-                new KeyFrame(new Duration(5000), // set end position at 40s
+                new KeyFrame(animationLength, // set end position at 40s
                         new KeyValue(super.translateXProperty(), (random() - .5) * 50),
                         new KeyValue(super.translateYProperty(), (random() - .5) * 50),
                         new KeyValue(super.opacityProperty(), 0),
@@ -76,23 +79,21 @@ public class CongregatedCircles extends Group {
         double randomX = random();
         double randomY = random();
         
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < numberOfCircles; i++) {
             RandomCircle randomCircle = new RandomCircle(randomX, randomY, radius, color);
             getChildren().add(randomCircle);
             randomCircle.animation.play();
-
+            
             Timeline remover = new Timeline(
-                    new KeyFrame(Duration.seconds(10), new EventHandler<ActionEvent>() {
+                    new KeyFrame(animationLength, new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent event) {
                             getChildren().remove(randomCircle);
                             randomCircle.animation.stop();
-
                         }
                     })
             );
             remover.play();
         }
-
     }
 }

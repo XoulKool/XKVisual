@@ -51,7 +51,7 @@ public class XKVisualUI extends Application {
     private Duration duration;
     private Button playButton, pauseButton, stopButton, fileOpenButton, fullScreenButton;
     private MenuButton modeSelect, animationSelect;
-    private MenuItem runByAudio, runByTime, runByUser, ConcentricAnim, CongregAnim, WaveAnim;
+    private MenuItem runByAudio, runByTime, runByUser, ConcentricAnim, CongregAnim, WaveAnim, SlashAnim, RectAnim;
 
     private Scene scene;
     private Media media;
@@ -60,15 +60,18 @@ public class XKVisualUI extends Application {
     private Timer runByTimeThread;
     private Timer runByAudioThread;
 
+    private final int RBATimeInterval = 10000; //10 seconds
+    private final int RBTTimeInterval = 15000;//15 seconds
+
     private Pane pane;
 
     private final int totalNumberOfAnimations = 3;
 
-    private Group root, wave, conCircles;
+    private Group root, wave, concentricCircles, congregatedCircles, slashingLines, rectangularRotation;
 
     UsefulFunctions func = new UsefulFunctions();
 
-    private double bassMagnitude;
+    private double bassMagnitude, middleMagnitude, trebleMagnitude;
 
     @Override
     public void start(Stage primaryStage) {
@@ -100,10 +103,14 @@ public class XKVisualUI extends Application {
         BorderPane borderPane = new BorderPane();
 
         root = new Group();
+        wave = new Group();
+        concentricCircles = new Group();
+        congregatedCircles = new Group();
+        slashingLines = new Group();
+        rectangularRotation = new Group();
+        
         pane = new Pane();
 
-        wave = new Group();
-        conCircles = new Group();
         borderPane.setCenter(pane);
         borderPane.setBottom(addToolBar());
 
@@ -134,24 +141,25 @@ public class XKVisualUI extends Application {
             if (modeStateContext.isMode("RunByTime")) {
                 runByTimeThread.cancel();
             }
-
-            RunByAudioMode runByAudioMode = new RunByAudioMode();
-            runByAudioMode.setXKModeListener(modeStateContext);
+            makeMode(modeStateContext, new RunByAudioMode());
         });
 
         runByTime.setOnAction((ActionEvent e) -> {
-            RunByTimeMode runByTimeMode = new RunByTimeMode();
-            runByTimeMode.setXKModeListener(modeStateContext);
+            if (modeStateContext.isMode("RunByAudio")) {
+                runByAudioThread.cancel();
+            }
+            makeMode(modeStateContext, new RunByTimeMode());
         });
 
         runByUser.setOnAction((ActionEvent e) -> {
             if (modeStateContext.isMode("RunByTime")) {
                 runByTimeThread.cancel();
+            } else if (modeStateContext.isMode("RunByAudio")) {
+                runByAudioThread.cancel();
             }
-            RunByUserMode runByUserMode = new RunByUserMode();
-            runByUserMode.setXKModeListener(modeStateContext);
+            makeMode(modeStateContext, new RunByUserMode());
         });
-        func.circlePath(conCircles);
+        func.circlePath(concentricCircles);//Insure Concentric Circle Generator always on same circle path
     }
 
     /**
@@ -215,26 +223,27 @@ public class XKVisualUI extends Application {
 
             AnimationStateContext animationStateContext = new AnimationStateContext();
 
-            WaveformAnimation waveformAnimation = new WaveformAnimation();
-            waveformAnimation.setXKAnimationListener(animationStateContext);
+            makeAnimation(animationStateContext, new WaveformAnimation()); //Always begin with waveform
 
             runByAudioThread.schedule(
                     new java.util.TimerTask() {
                 @Override
                 public void run() {
-                    //Do some stuff in another thread
                     Platform.runLater(new Runnable() {
                         public void run() {
-                            System.out.println(bassMagnitude);
-                            if (bassMagnitude > 120) {
-                                ConcentricGeneratorAnimation concentricGeneratorAnimation = new ConcentricGeneratorAnimation();
-                                concentricGeneratorAnimation.setXKAnimationListener(animationStateContext);
+                            if (bassMagnitude < 70 & !animationStateContext.isAnimationState("Wave")) {
+                                makeAnimation(animationStateContext, new WaveformAnimation());
+                            } else if (bassMagnitude < 90 & !animationStateContext.isAnimationState("Congregated Circles")) {
+                                makeAnimation(animationStateContext, new CongregatedCirclesAnimation());
+                            } else if (!animationStateContext.isAnimationState("Concentric Circle Generator")) {
+                                makeAnimation(animationStateContext, new ConcentricGeneratorAnimation());
                             }
+
                         }
                     });
                 }
             },
-                    2000, 2000
+                    RBATimeInterval, RBATimeInterval
             );
         }
     }
@@ -273,16 +282,13 @@ public class XKVisualUI extends Application {
 
                                 if (randomAnimation == 1 && !animationStateContext.isAnimationState("Concentric Circle Generator")) {
                                     sameAnimationAlreadyRunning = false;
-                                    ConcentricGeneratorAnimation concentricGeneratorAnimation = new ConcentricGeneratorAnimation();
-                                    concentricGeneratorAnimation.setXKAnimationListener(animationStateContext);
+                                    makeAnimation(animationStateContext, new ConcentricGeneratorAnimation());
                                 } else if (randomAnimation == 2 && !animationStateContext.isAnimationState("Wave")) {
                                     sameAnimationAlreadyRunning = false;
-                                    WaveformAnimation waveformAnimation = new WaveformAnimation();
-                                    waveformAnimation.setXKAnimationListener(animationStateContext);
+                                    makeAnimation(animationStateContext, new WaveformAnimation());
                                 } else if (randomAnimation == 3 && !animationStateContext.isAnimationState("Congregated Circles")) {
                                     sameAnimationAlreadyRunning = false;
-                                    CongregatedCirclesAnimation congregatedCirclesAnimation = new CongregatedCirclesAnimation();
-                                    congregatedCirclesAnimation.setXKAnimationListener(animationStateContext);
+                                    makeAnimation(animationStateContext, new CongregatedCirclesAnimation());
                                 } else {
                                     sameAnimationAlreadyRunning = true;
                                 }
@@ -292,7 +298,7 @@ public class XKVisualUI extends Application {
                     });
                 }
             },
-                    0, 15000
+                    0, RBTTimeInterval
             );
 
         }
@@ -311,34 +317,11 @@ public class XKVisualUI extends Application {
             AnimationStateContext animationStateContext = new AnimationStateContext();
 
             //Set Concentric Generator animation button
-            ConcentricAnim.setOnAction((ActionEvent e) -> {
-                if (!modeStateContext.isMode("RunByUser")) { //If it's not in this mode nothing should be executed!
-                    return;
-                }
-                ConcentricGeneratorAnimation concentricGeneratorAnimation = new ConcentricGeneratorAnimation();
-                concentricGeneratorAnimation.setXKAnimationListener(animationStateContext);
-            });
-
-            //Set Waveform Animation button
-            WaveAnim.setOnAction((ActionEvent e) -> {
-                if (!modeStateContext.isMode("RunByUser")) {//If it's not in this mode nothing should be executed!
-                    return;
-                }
-                WaveformAnimation waveformAnimation = new WaveformAnimation();
-                waveformAnimation.setXKAnimationListener(animationStateContext);
-            });
-
-            //Congregated Circles animation button
-            CongregAnim.setOnAction((ActionEvent e) -> {
-
-                if (!modeStateContext.isMode("RunByUser")) {//If it's not in this mode nothing should be executed!
-                    return;
-                }
-
-                CongregatedCirclesAnimation congregatedCirclesAnimation = new CongregatedCirclesAnimation();
-                congregatedCirclesAnimation.setXKAnimationListener(animationStateContext);
-            });
-
+            setAnimationOnAction(ConcentricAnim, animationStateContext, modeStateContext, new ConcentricGeneratorAnimation());
+            setAnimationOnAction(CongregAnim, animationStateContext, modeStateContext, new CongregatedCirclesAnimation());
+            setAnimationOnAction(WaveAnim, animationStateContext, modeStateContext, new WaveformAnimation());
+            setAnimationOnAction(SlashAnim, animationStateContext, modeStateContext, new SlashingLinesAnimation());
+            setAnimationOnAction(RectAnim, animationStateContext, modeStateContext, new RectangularRotationAnimation());
         }
     }
 
@@ -352,7 +335,7 @@ public class XKVisualUI extends Application {
         private String animationName;
 
         /**
-         * Don't do anything except globals to null when instantiated
+         * Don't do anything except set globals to null when instantiated
          */
         AnimationStateContext() {
             animationState = null;
@@ -397,20 +380,19 @@ public class XKVisualUI extends Application {
             pane.getChildren().clear();
             //Clean slate before Button is hit
 
-            mediaPlayer.setAudioSpectrumListener(
-                    (double timestamp,
-                            double duration,
-                            float[] magnitudes,
-                            float[] phases) -> {
+            mediaPlayer.setAudioSpectrumListener((double timestamp,
+                    double duration,
+                    float[] magnitudes,
+                    float[] phases) -> {
 
-                        bassMagnitude = (magnitudes[0] + 60) * 4;
+                bassMagnitude = (magnitudes[0] + 60) * 4;
 
-                        if ((magnitudes[0] + 60) * 4 > 120) {
-                            conCircles.getChildren().add(new ConcentricGenerator((magnitudes[0] + 60) * 12));
-                        }
-                    }
+                if ((magnitudes[0] + 60) * 4 > 120) {
+                    concentricCircles.getChildren().add(new ConcentricGenerator((magnitudes[0] + 60) * 12));
+                }
+            }
             );
-            func.blendWithGrad(root, conCircles);
+            func.blendWithGrad(root, concentricCircles);
             pane.getChildren().add(root);
 
         }
@@ -437,17 +419,17 @@ public class XKVisualUI extends Application {
                         bassMagnitude = (magnitudes[0] + 60) * 4;
 
                         if ((magnitudes[2] + 60) * 4 > 120) {
-                            root.getChildren().add(new CongregatedCircles(30, Color.web("blue", 0.1)));
+                            congregatedCircles.getChildren().add(new CongregatedCircles(30, Color.web("blue", 0.1)));
                         } else if ((magnitudes[0] + 60) * 4 > 120) {
-                            root.getChildren().add(new CongregatedCircles(60, Color.web("red", 0.1)));
+                            congregatedCircles.getChildren().add(new CongregatedCircles(60, Color.web("red", 0.1)));
 
                         } else if ((magnitudes[40] + 60) * 4 > 30) {
-                            root.getChildren().add(new CongregatedCircles(60, Color.web("yellow", 0.1)));
+                            congregatedCircles.getChildren().add(new CongregatedCircles(60, Color.web("yellow", 0.1)));
                         }
                     }
             );
 
-            func.blendWithGrad(root);
+            func.blendWithGrad(root, congregatedCircles);
             pane.getChildren().add(root);
 
         }
@@ -523,9 +505,96 @@ public class XKVisualUI extends Application {
             func.blendWithGrad(root, wave);
 
             pane.getChildren().add(root);
-
         }
+    }
 
+    class SlashingLinesAnimation implements AnimationState {
+
+        public void setXKAnimationListener(AnimationStateContext animationStateContext) {
+            animationStateContext.setAnimation(this, "Slashing Lines");
+            pane.getChildren().clear();
+
+            mediaPlayer.setAudioSpectrumListener(
+                    (double timestamp,
+                            double duration,
+                            float[] magnitudes,
+                            float[] phases) -> {
+
+                        bassMagnitude = (magnitudes[0] + 60) * 4;
+                        if(bassMagnitude > 80)
+                            slashingLines.getChildren().add(new SlashingLines(400, bassMagnitude + 350, 700, bassMagnitude, Color.AQUA));
+                    });
+            func.blendWithGrad(root, slashingLines);
+            pane.getChildren().add(root);
+        }
+    }
+    
+    class RectangularRotationAnimation implements AnimationState{
+        public void setXKAnimationListener(AnimationStateContext animationStateContext){
+            animationStateContext.setAnimation(this, "Rectangular Rotation");
+            pane.getChildren().clear();
+            
+            mediaPlayer.setAudioSpectrumListener(
+                    (double timestamp,
+                            double duration,
+                            float[] magnitudes,
+                            float[] phases) -> {
+
+                        bassMagnitude = (magnitudes[0] + 60) * 4;
+
+                    });
+        }
+    }
+
+    /**
+     * A utility function which takes care of instantiating a menu item on a
+     * menubutton given the proper parameters.
+     *
+     * @param menuItem
+     * @param animationStateContext
+     * @param modeStateContext
+     * @param animationState
+     */
+    private void setAnimationOnAction(MenuItem menuItem, AnimationStateContext animationStateContext, ModeStateContext modeStateContext, AnimationState animationState) {
+        menuItem.setOnAction((ActionEvent e) -> {
+            if (!modeStateContext.isMode("RunByUser")) //If it's not in this mode nothing should be executed!
+                return;
+            makeAnimation(animationStateContext, animationState);
+        });
+    }
+            /**
+             * A utility function used to instantiate and activate a particular
+             * mode
+             *
+             * @param modeStateContext
+             * @param modeState
+             */
+    private void makeMode(ModeStateContext modeStateContext, ModeState modeState) {
+        modeState.setXKModeListener(modeStateContext);
+    }
+
+    /**
+     * A utility function used to instantiate and activate a particular
+     * animation.
+     *
+     * @param animationStateContext
+     * @param animationState
+     */
+    private void makeAnimation(AnimationStateContext animationStateContext, AnimationState animationState) {
+        animationState.setXKAnimationListener(animationStateContext);
+    }
+
+    /**
+     * A utility function to minimize code whenever we need to find the
+     * instantaneous bass, middle, and treble magnitudes for the RunByAudio
+     * ModeState.
+     *
+     * @param newBassMagnitude
+     * @param newMiddleMagnitude
+     * @param newTrebleMagnitude
+     */
+    public void setMagnitudes(double newBassMagnitude, double newMiddleMagnitude, double newTrebleMagnitude) {
+        bassMagnitude = newBassMagnitude;
     }
 
     /**
@@ -565,7 +634,9 @@ public class XKVisualUI extends Application {
         ConcentricAnim = new MenuItem("Concentric Circle Animation");
         CongregAnim = new MenuItem("Congregated Circles Animation");
         WaveAnim = new MenuItem("Waveform Animation");
-        animationSelect = new MenuButton("Animation Select", null, ConcentricAnim, CongregAnim, WaveAnim);
+        SlashAnim = new MenuItem("Slashing Lines Animation");
+        RectAnim = new MenuItem("Rectangular Rotation Animation");
+        animationSelect = new MenuButton("Animation Select", null, ConcentricAnim, CongregAnim, WaveAnim, SlashAnim, RectAnim);
 
         buttonFunctionality();
 

@@ -1,5 +1,8 @@
 
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
 
 
 /**
@@ -7,16 +10,22 @@ import javafx.scene.paint.LinearGradient;
  *
  * @author Jason Loux
  */
-public class Gradient {
-    int currentGradient;
-    LinearGradient linGrad;
+public class Gradient{
+    private int currentGrad = 0;
+    LinearGradient currentGradient;
     
-    Gradient(int newGrad){
-        
+    LinearGradient grad1 = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
+        new Stop(0, Color.web("green")),
+        new Stop(0.14, Color.web("turquoise")),
+        new Stop(0.28, Color.web("violet")),
+        new Stop(0.57, Color.web("yellow")),
+        new Stop(0.71, Color.web("hotpink")),
+        new Stop(1, Color.web("maroon")),});
+    
+    Gradient(LinearGradient newGradient){
+        currentGrad += currentGrad;
     }
     
-    private LinearGradient setGradient(int i){
-        return linGrad;
-    }
+
     
 }
