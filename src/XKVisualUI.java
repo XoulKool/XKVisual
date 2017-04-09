@@ -10,6 +10,7 @@ import javafx.application.Platform;
 import static javafx.application.Platform.runLater;
 import javafx.beans.Observable;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -33,6 +34,7 @@ import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 /**
@@ -65,19 +67,26 @@ public class XKVisualUI extends Application {
 
     private Pane pane;
 
-    private final int totalNumberOfAnimations = 3;
+    private final int totalNumberOfAnimations = 5;
 
     private Group root, wave, concentricCircles, congregatedCircles, slashingLines, rectangularRotation;
 
     UsefulFunctions func = new UsefulFunctions();
 
-    private double bassMagnitude, middleMagnitude, trebleMagnitude;
+    private double bassMagnitude;
+
+    ModeStateContext modeStateContext;
 
     @Override
     public void start(Stage primaryStage) {
-
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent e) {
+                Platform.exit();
+                System.exit(0);
+            }
+        });
         startXKVisual(primaryStage);
-
     }
 
     /**
@@ -86,6 +95,7 @@ public class XKVisualUI extends Application {
      * @param stage
      */
     public void restart(Stage stage) {
+        closeThreads();
         startXKVisual(stage);
     }
 
@@ -108,7 +118,7 @@ public class XKVisualUI extends Application {
         congregatedCircles = new Group();
         slashingLines = new Group();
         rectangularRotation = new Group();
-        
+
         pane = new Pane();
 
         borderPane.setCenter(pane);
@@ -135,28 +145,20 @@ public class XKVisualUI extends Application {
             restart(stage);
         });
 
-        ModeStateContext modeStateContext = new ModeStateContext();
+        modeStateContext = new ModeStateContext();
 
         runByAudio.setOnAction((ActionEvent e) -> {
-            if (modeStateContext.isMode("RunByTime")) {
-                runByTimeThread.cancel();
-            }
+            closeThreads();
             makeMode(modeStateContext, new RunByAudioMode());
         });
 
         runByTime.setOnAction((ActionEvent e) -> {
-            if (modeStateContext.isMode("RunByAudio")) {
-                runByAudioThread.cancel();
-            }
+            closeThreads();
             makeMode(modeStateContext, new RunByTimeMode());
         });
 
         runByUser.setOnAction((ActionEvent e) -> {
-            if (modeStateContext.isMode("RunByTime")) {
-                runByTimeThread.cancel();
-            } else if (modeStateContext.isMode("RunByAudio")) {
-                runByAudioThread.cancel();
-            }
+            closeThreads();
             makeMode(modeStateContext, new RunByUserMode());
         });
         func.circlePath(concentricCircles);//Insure Concentric Circle Generator always on same circle path
@@ -235,6 +237,10 @@ public class XKVisualUI extends Application {
                                 makeAnimation(animationStateContext, new WaveformAnimation());
                             } else if (bassMagnitude < 90 & !animationStateContext.isAnimationState("Congregated Circles")) {
                                 makeAnimation(animationStateContext, new CongregatedCirclesAnimation());
+                            } else if (bassMagnitude < 105 & !animationStateContext.isAnimationState("Slashing Lines")) {
+                                makeAnimation(animationStateContext, new SlashingLinesAnimation());
+                            } else if (bassMagnitude < 120 & !animationStateContext.isAnimationState("Rectangular Rotation")) {
+                                makeAnimation(animationStateContext, new RectangularRotationAnimation());
                             } else if (!animationStateContext.isAnimationState("Concentric Circle Generator")) {
                                 makeAnimation(animationStateContext, new ConcentricGeneratorAnimation());
                             }
@@ -289,6 +295,12 @@ public class XKVisualUI extends Application {
                                 } else if (randomAnimation == 3 && !animationStateContext.isAnimationState("Congregated Circles")) {
                                     sameAnimationAlreadyRunning = false;
                                     makeAnimation(animationStateContext, new CongregatedCirclesAnimation());
+                                } else if (randomAnimation == 4 && !animationStateContext.isAnimationState("Slashing Lines")) {
+                                    sameAnimationAlreadyRunning = false;
+                                    makeAnimation(animationStateContext, new SlashingLinesAnimation());
+                                } else if (randomAnimation == 5 && !animationStateContext.isAnimationState("Rectangular Rotation")) {
+                                    sameAnimationAlreadyRunning = false;
+                                    makeAnimation(animationStateContext, new RectangularRotationAnimation());
                                 } else {
                                     sameAnimationAlreadyRunning = true;
                                 }
@@ -419,12 +431,12 @@ public class XKVisualUI extends Application {
                         bassMagnitude = (magnitudes[0] + 60) * 4;
 
                         if ((magnitudes[2] + 60) * 4 > 120) {
-                            congregatedCircles.getChildren().add(new CongregatedCircles(30, Color.web("blue", 0.1)));
-                        } else if ((magnitudes[0] + 60) * 4 > 120) {
-                            congregatedCircles.getChildren().add(new CongregatedCircles(60, Color.web("red", 0.1)));
+                            congregatedCircles.getChildren().add(new CongregatedCircles(30, Color.web("blue", 0.9)));
+                        } else if ((magnitudes[0] + 60) * 4 > 90) {
+                            congregatedCircles.getChildren().add(new CongregatedCircles(60, Color.web("red", 0.9)));
 
                         } else if ((magnitudes[40] + 60) * 4 > 30) {
-                            congregatedCircles.getChildren().add(new CongregatedCircles(60, Color.web("yellow", 0.1)));
+                            congregatedCircles.getChildren().add(new CongregatedCircles(60, Color.web("yellow", 0.9)));
                         }
                     }
             );
@@ -521,19 +533,40 @@ public class XKVisualUI extends Application {
                             float[] phases) -> {
 
                         bassMagnitude = (magnitudes[0] + 60) * 4;
-                        if(bassMagnitude > 80)
-                            slashingLines.getChildren().add(new SlashingLines(400, bassMagnitude + 350, 700, bassMagnitude, Color.AQUA));
+
+                        if (bassMagnitude > 130) {
+                            slashingLines.getChildren().add(new SlashingLines(1250,
+                                    bassMagnitude + 600, 1300, bassMagnitude + 400,
+                                    Color.web("blue", .9)));
+                        } else if (bassMagnitude > 120) {
+                            slashingLines.getChildren().add(new SlashingLines(400,
+                                    bassMagnitude + 600, 500, bassMagnitude + 400,
+                                    Color.web("yellow", .9)));
+                        } else if (bassMagnitude > 90) {
+                            slashingLines.getChildren().add(new SlashingLines(1250,
+                                    bassMagnitude + 300, 1300, bassMagnitude + 100,
+                                    Color.web("lime", .9)));
+                        } else if (bassMagnitude > 80) {
+                            slashingLines.getChildren().add(new SlashingLines(1250,
+                                    bassMagnitude + 100, 1300, bassMagnitude,
+                                    Color.web("red", .9)));
+                        } else if (bassMagnitude > 70) {
+                            slashingLines.getChildren().add(new SlashingLines(0,
+                                    bassMagnitude + 600, 150, bassMagnitude + 400,
+                                    Color.web("lightgreen", .9)));
+                        }
                     });
             func.blendWithGrad(root, slashingLines);
             pane.getChildren().add(root);
         }
     }
-    
-    class RectangularRotationAnimation implements AnimationState{
-        public void setXKAnimationListener(AnimationStateContext animationStateContext){
+
+    class RectangularRotationAnimation implements AnimationState {
+
+        public void setXKAnimationListener(AnimationStateContext animationStateContext) {
             animationStateContext.setAnimation(this, "Rectangular Rotation");
             pane.getChildren().clear();
-            
+
             mediaPlayer.setAudioSpectrumListener(
                     (double timestamp,
                             double duration,
@@ -542,7 +575,20 @@ public class XKVisualUI extends Application {
 
                         bassMagnitude = (magnitudes[0] + 60) * 4;
 
+                        rectangularRotation.getChildren().add(new RectangularRotation(pane.getWidth() / 2,
+                                pane.getHeight() / 2, bassMagnitude, bassMagnitude * 3, Color.web("blue", 0.4)));
+
                     });
+            func.blendWithGrad(root, rectangularRotation);
+            pane.getChildren().add(root);
+        }
+    }
+
+    public void closeThreads() {
+        if (modeStateContext.isMode("RunByAudio")) {
+            runByAudioThread.cancel();
+        } else if (modeStateContext.isMode("RunByTime")) {
+            runByTimeThread.cancel();
         }
     }
 
@@ -558,17 +604,19 @@ public class XKVisualUI extends Application {
     private void setAnimationOnAction(MenuItem menuItem, AnimationStateContext animationStateContext, ModeStateContext modeStateContext, AnimationState animationState) {
         menuItem.setOnAction((ActionEvent e) -> {
             if (!modeStateContext.isMode("RunByUser")) //If it's not in this mode nothing should be executed!
+            {
                 return;
+            }
             makeAnimation(animationStateContext, animationState);
         });
     }
-            /**
-             * A utility function used to instantiate and activate a particular
-             * mode
-             *
-             * @param modeStateContext
-             * @param modeState
-             */
+
+    /**
+     * A utility function used to instantiate and activate a particular mode
+     *
+     * @param modeStateContext
+     * @param modeState
+     */
     private void makeMode(ModeStateContext modeStateContext, ModeState modeState) {
         modeState.setXKModeListener(modeStateContext);
     }
@@ -590,10 +638,8 @@ public class XKVisualUI extends Application {
      * ModeState.
      *
      * @param newBassMagnitude
-     * @param newMiddleMagnitude
-     * @param newTrebleMagnitude
      */
-    public void setMagnitudes(double newBassMagnitude, double newMiddleMagnitude, double newTrebleMagnitude) {
+    public void setMagnitudes(double newBassMagnitude) {
         bassMagnitude = newBassMagnitude;
     }
 
