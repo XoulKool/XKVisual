@@ -1,4 +1,3 @@
-
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -16,7 +15,7 @@ import javafx.util.Duration;
  */
 public class RectangularRotation extends Group {
     
-    private final Duration animationLength = Duration.seconds(5);
+    private final Duration animationLength = Duration.seconds(2);
     private final int numberOfRotations = 4;
 
     /**

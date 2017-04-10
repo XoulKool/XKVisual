@@ -106,7 +106,20 @@ public class XKVisualUI extends Application {
      * @param stage
      */
     public void startXKVisual(Stage stage) {
-        initializeMedia();
+        initializeMedia(stage);
+        
+        //If media is not initialzed after this point (i.e == null), the user has decided to
+        //cancel out of our file chooser upon application opening.
+        //If this is the case, XKVisual WILL NOT RUN.
+        //The user may however exit out of the file chooser if the 'open file'
+        //button is selected, because to get to this point they will have had to
+        //have already had media selected the from previous selection. Thus media
+        //will not be null, and we may safely proceed.
+        if(media == null){
+            System.out.println("We cannot begin until the user has selected "
+                    + "a file");
+            System.exit(0);
+        }
 
         UsefulFunctions func = new UsefulFunctions();
 
@@ -141,7 +154,7 @@ public class XKVisualUI extends Application {
         });
         stage.show();
         fileOpenButton.setOnAction((ActionEvent e) -> {
-            mediaPlayer.stop();
+            mediaPlayer.pause();
             restart(stage);
         });
 
@@ -739,11 +752,16 @@ public class XKVisualUI extends Application {
      * utilizing java's FileChooser class.
      *
      */
-    private void initializeMedia() {
+    private void initializeMedia(Stage stage) {
 
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new ExtensionFilter("*.mp3", "*.mp3"));
         File file = fc.showOpenDialog(null);
+        
+        if(file == null){
+            return;
+        }
+            
         String path = file.getAbsolutePath();
         path = path.replace("\\", "/");
         media = new Media(new File(path).toURI().toString());
