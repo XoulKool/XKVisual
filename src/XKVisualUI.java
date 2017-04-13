@@ -107,7 +107,7 @@ public class XKVisualUI extends Application {
      */
     public void startXKVisual(Stage stage) {
         initializeMedia(stage);
-        
+
         //If media is not initialzed after this point (i.e == null), the user has decided to
         //cancel out of our file chooser upon application opening.
         //If this is the case, XKVisual WILL NOT RUN.
@@ -115,7 +115,7 @@ public class XKVisualUI extends Application {
         //button is selected, because to get to this point they will have had to
         //have already had media selected the from previous selection. Thus media
         //will not be null, and we may safely proceed.
-        if(media == null){
+        if (media == null) {
             System.out.println("We cannot begin until the user has selected "
                     + "a file");
             System.exit(0);
@@ -587,9 +587,21 @@ public class XKVisualUI extends Application {
                             float[] phases) -> {
 
                         bassMagnitude = (magnitudes[0] + 60) * 4;
+                        double middleMagnitude = (magnitudes[10] + 60) * 4;
+                        double trebleMagnitude = (magnitudes[24] + 60) * 4;
+                        Group tempRoot = new Group();
 
+                        if (bassMagnitude > 150) {
+                            func.blendWithGrad(tempRoot, rectangularRotation);
+                            pane.getChildren().add(tempRoot);
+                        }
+                        
+                        rectangularRotation.getChildren().add(new RectangularRotation(pane.getWidth() / 6,
+                                pane.getHeight() / 3, bassMagnitude * 4, bassMagnitude * 7, Color.web("blue", 0.4), 4));
                         rectangularRotation.getChildren().add(new RectangularRotation(pane.getWidth() / 2,
-                                pane.getHeight() / 2, bassMagnitude, bassMagnitude * 3, Color.web("blue", 0.4)));
+                                pane.getHeight() / 2, middleMagnitude * 4, middleMagnitude * 7, Color.web("green", 0.4), 4));
+                        rectangularRotation.getChildren().add(new RectangularRotation(3 * pane.getWidth() / 4,
+                                pane.getHeight() / 4, trebleMagnitude * 4, trebleMagnitude * 7, Color.web("red", 0.4), 4));
 
                     });
             func.blendWithGrad(root, rectangularRotation);
@@ -757,11 +769,11 @@ public class XKVisualUI extends Application {
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new ExtensionFilter("*.mp3", "*.mp3"));
         File file = fc.showOpenDialog(null);
-        
-        if(file == null){
+
+        if (file == null) {
             return;
         }
-            
+
         String path = file.getAbsolutePath();
         path = path.replace("\\", "/");
         media = new Media(new File(path).toURI().toString());

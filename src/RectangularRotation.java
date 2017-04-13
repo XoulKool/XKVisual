@@ -16,7 +16,6 @@ import javafx.util.Duration;
 public class RectangularRotation extends Group {
     
     private final Duration animationLength = Duration.seconds(2);
-    private final int numberOfRotations = 4;
 
     /**
      * This class represents a single line animation which will be added to the
@@ -26,7 +25,7 @@ public class RectangularRotation extends Group {
         
         Timeline animation;
         
-        RotatingRectangle(double x, double y, double width, double height, Color color) {
+        RotatingRectangle(double x, double y, double width, double height, Color color, int numberOfRotations) {
             super(x, y, width, height);
             setStroke(Color.web("white", 0.7));
             setFill(color);
@@ -42,8 +41,8 @@ public class RectangularRotation extends Group {
         }
     }
 
-    RectangularRotation(double x, double y, double height, double width, Color color) {
-        final RotatingRectangle rect = new RotatingRectangle(x, y, width, height, color);
+    RectangularRotation(double x, double y, double height, double width, Color color, int numberOfRotations) {
+        final RotatingRectangle rect = new RotatingRectangle(x, y, width, height, color, numberOfRotations);
         getChildren().add(rect);
         rect.animation.play();
 
