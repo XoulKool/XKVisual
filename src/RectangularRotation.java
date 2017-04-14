@@ -25,7 +25,7 @@ public class RectangularRotation extends Group {
         
         Timeline animation;
         
-        RotatingRectangle(double x, double y, double width, double height, Color color, int numberOfRotations) {
+        RotatingRectangle(double x, double y, double width, double height, Color color, double numberOfRotations) {
             super(x, y, width, height);
             setStroke(Color.web("white", 0.7));
             setFill(color);
@@ -36,12 +36,13 @@ public class RectangularRotation extends Group {
                     new KeyFrame(animationLength, new KeyValue(rotateProperty(), 360 * numberOfRotations)),
                     new KeyFrame(animationLength, new KeyValue(opacityProperty(), 50)),
                     new KeyFrame(animationLength, new KeyValue(widthProperty(), 0)),
-                    new KeyFrame(animationLength, new KeyValue(heightProperty(), 0))
+                    new KeyFrame(animationLength, new KeyValue(heightProperty(), 0)),
+                    new KeyFrame(animationLength, new KeyValue(fillProperty(), Color.web("white", 0.4)))
             );
         }
     }
 
-    RectangularRotation(double x, double y, double height, double width, Color color, int numberOfRotations) {
+    RectangularRotation(double x, double y, double height, double width, Color color, double numberOfRotations) {
         final RotatingRectangle rect = new RotatingRectangle(x, y, width, height, color, numberOfRotations);
         getChildren().add(rect);
         rect.animation.play();

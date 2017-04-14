@@ -1,4 +1,5 @@
 
+import java.util.Random;
 import javafx.animation.Interpolator;
 import javafx.animation.PathTransition;
 import javafx.animation.Timeline;
@@ -26,9 +27,9 @@ import javafx.util.Duration;
  */
 
 public class UsefulFunctions {
-
-    int counter = 0; //A global counter used for modding out the gradients.
-
+    Random random = new Random();
+    int counter = random.nextInt(5) + 1; //A global counter used for modding out the gradients.
+    int numberOGrads = 5;
     //Construction of multiple gradients which are used for the program
     
     LinearGradient grad1 = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
@@ -46,7 +47,28 @@ public class UsefulFunctions {
         new Stop(0.57, Color.web("Crimson")),
         new Stop(0.71, Color.web("FireBrick")),
         new Stop(1, Color.web("DarkRed")),});
-
+    
+    LinearGradient grad3 = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
+        new Stop(0, Color.web("Lime")),
+        new Stop(0.14, Color.web("lightGreen")),
+        new Stop(0.28, Color.web("green")),
+        new Stop(0.57, Color.web("silver")),
+        new Stop(0.71, Color.web("lime")),
+        new Stop(1, Color.web("forestGreen")),});
+    LinearGradient grad4 = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
+        new Stop(0, Color.web("lightBlue")),
+        new Stop(0.14, Color.web("blue")),
+        new Stop(0.28, Color.web("cyan")),
+        new Stop(0.57, Color.web("indigo")),
+        new Stop(0.71, Color.web("teal")),
+        new Stop(1, Color.web("aqua")),});
+        LinearGradient grad5 = new LinearGradient(0f, 1f, 1f, 0f, true, CycleMethod.NO_CYCLE, new Stop[]{
+        new Stop(0, Color.web("silver")),
+        new Stop(0.14, Color.web("white")),
+        new Stop(0.28, Color.web("gold")),
+        new Stop(0.57, Color.web("cyan")),
+        new Stop(0.71, Color.web("gold")),
+        new Stop(1, Color.web("cyan")),});
     /**
      * This function instantiates an ellipsoidal path based on the following 
      * parameters and returns this path to be used to any Group or animation
@@ -90,13 +112,16 @@ public class UsefulFunctions {
         
         Rectangle colors;
 
-        if (counter % 2 == 0) {
-
+        if (counter % numberOGrads == 0) 
             colors = new Rectangle(1600, 1200, grad1);
-
-        } else {
+        else if(counter % numberOGrads == 1)
             colors = new Rectangle(1600, 1200, grad2);
-        }
+        else if(counter % numberOGrads == 2)
+            colors = new Rectangle(1600, 1200, grad3);
+        else if(counter % numberOGrads == 3)
+            colors = new Rectangle(1600, 1200, grad4);
+        else
+            colors = new Rectangle(1600, 1200, grad5);
 
         Node[] newargs = new Node[varargs.length + 2];
 

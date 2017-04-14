@@ -25,7 +25,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.media.AudioSpectrumListener;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -590,18 +589,13 @@ public class XKVisualUI extends Application {
                         double middleMagnitude = (magnitudes[10] + 60) * 4;
                         double trebleMagnitude = (magnitudes[24] + 60) * 4;
                         Group tempRoot = new Group();
-
-                        if (bassMagnitude > 150) {
-                            func.blendWithGrad(tempRoot, rectangularRotation);
-                            pane.getChildren().add(tempRoot);
-                        }
                         
-                        rectangularRotation.getChildren().add(new RectangularRotation(pane.getWidth() / 6,
-                                pane.getHeight() / 3, bassMagnitude * 4, bassMagnitude * 7, Color.web("blue", 0.4), 4));
+                        rectangularRotation.getChildren().add(new RectangularRotation(pane.getWidth()/20,
+                                pane.getHeight() / 3, bassMagnitude * 2, bassMagnitude * 4, Color.web("blue", 0.5), (bassMagnitude - 60.0) / 20.0));
                         rectangularRotation.getChildren().add(new RectangularRotation(pane.getWidth() / 2,
-                                pane.getHeight() / 2, middleMagnitude * 4, middleMagnitude * 7, Color.web("green", 0.4), 4));
+                                pane.getHeight() / 5, middleMagnitude * 2, middleMagnitude * 4, Color.web("lime", 0.5), (bassMagnitude - 60.0) / 20.0));
                         rectangularRotation.getChildren().add(new RectangularRotation(3 * pane.getWidth() / 4,
-                                pane.getHeight() / 4, trebleMagnitude * 4, trebleMagnitude * 7, Color.web("red", 0.4), 4));
+                                3 * pane.getHeight() / 4, trebleMagnitude * 2, trebleMagnitude * 4, Color.web("red", 0.5), (bassMagnitude - 60.0) / 20.0));
 
                     });
             func.blendWithGrad(root, rectangularRotation);
@@ -806,10 +800,6 @@ public class XKVisualUI extends Application {
 
         });
         mediaPlayer.setOnPlaying(() -> {
-            duration = mediaPlayer.getMedia().getDuration();
-            updateValues();
-        });
-        mediaPlayer.setOnStopped(() -> {
             duration = mediaPlayer.getMedia().getDuration();
             updateValues();
         });
