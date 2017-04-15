@@ -18,7 +18,7 @@ There are three primary modes for this application.  All of which can be selecte
 * RunByTime
 * RunByUser
 
-#####RunByAudio
+##### RunByAudio
 In this mode the application checks the magnitude of the bass every ten seconds and makes a decision whether or not to change the current
 running animation based on this magnitude.  By default, every time new media is selected this mode runs.  Also, the waveform animation always run first by default in this mode.
 
