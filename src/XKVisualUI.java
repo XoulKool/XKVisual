@@ -532,6 +532,13 @@ public class XKVisualUI extends Application {
         }
     }
 
+    /**
+     * This animation creates a series of colored rotating lines from 5 
+     * different focal points on the screen which dissipate at the top left
+     * hand corner.  Where the lines emanate from are determined by the magnitude
+     * of the bass in the song.
+     */
+    
     class SlashingLinesAnimation implements AnimationState {
 
         public void setXKAnimationListener(AnimationStateContext animationStateContext) {
@@ -573,6 +580,13 @@ public class XKVisualUI extends Application {
         }
     }
 
+    /**
+     * This animation creates three different focal points on our pane which 
+     * represent treble, middle, and bass magnitudes, respectively.  Then based
+     * on the loudness of each particular magnitude rectangles of height h and 
+     * width w appear and shrink back into the focal point, rotating to the 
+     * degree of the particular magnitude.
+     */
     class RectangularRotationAnimation implements AnimationState {
 
         public void setXKAnimationListener(AnimationStateContext animationStateContext) {
