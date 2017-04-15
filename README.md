@@ -6,4 +6,5 @@ It is an audio-waveform visualizer which manipulates artistic renderings of musi
 
 * Netbeans IDE v8.2 w/ JavaFx
 
-Hello
+This is the exact IDE which was this application was built on.  [Click here for a link to install Java SE version](https://netbeans.org/downloads/)
+
