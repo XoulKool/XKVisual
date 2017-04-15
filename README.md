@@ -22,6 +22,12 @@ There are three primary modes for this application.  All of which can be selecte
 In this mode the application checks the magnitude of the bass every ten seconds and makes a decision whether or not to change the current
 running animation based on this magnitude.  By default, every time new media is selected this mode runs.  Also, the waveform animation always run first by default in this mode.
 
+##### RunByTime
+Animations change randomly every fifteen seconds based on no criteria.  I created this mode so that a user is practically guaranteed a unique experience to a particular song.
+
+##### RunByUser
+Once this button is selected from the 
+
 ### Instructions for Proper Enjoyment
 
 Begin by selecting a file.  The application will then automatically begin in RunByAudioMode
