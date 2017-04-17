@@ -477,68 +477,49 @@ public class XKVisualUI extends Application {
                             double duration,
                             float[] magnitudes,
                             float[] phases) -> {
-                        wave.getChildren().clear();
 
+                        wave.getChildren().clear();
+                        int interval = 0;
+                        double x = 20;
+                        double y = pane.getHeight() + 10;
+                        int magnitudePlace = 0;
                         bassMagnitude = (magnitudes[0] + 60) * 4;
 
-                        int i = 0;
-
-                        int x = 20;
-
-                        double y = pane.getHeight() + 10;
-                        Random rand = new Random(System.currentTimeMillis());
-                        // Build random colored circles
-                        for (int j = 0; j < 64; j++) {
-                            Circle circle = new Circle(15);
-                            circle.setCenterX(x + i);
-                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 10)));
-                            circle.setFill(Color.web("white", .3));
-                            wave.getChildren().add(circle);
-                            i += 21;
-                        }
-                        i = 0;
-                        for (int j = 0; j < 64; j++) {
-                            Circle circle = new Circle(15);
-                            circle.setCenterX(pane.getWidth() - i - 20);
-                            circle.setCenterY(y + ((-1 * (magnitudes[j] + 60) * 10)));
-                            circle.setFill(Color.web("white", .3));
-                            wave.getChildren().add(circle);
-                            i += 21;
-                        }
-                        i = 0;
-                        for (int j = 0; j < 64; j++) {
-                            Circle circle = new Circle(15);
-                            circle.setCenterX(pane.getWidth() - i - 20);
-                            circle.setCenterY((magnitudes[j] + 60) * 10);
-                            circle.setFill(Color.web("white", .3));
-                            wave.getChildren().add(circle);
-                            i += 21;
-                        }
-                        i = 0;
-                        for (int j = 0; j < 64; j++) {
-                            Circle circle = new Circle(15);
-                            circle.setCenterX(x + i);
-                            circle.setCenterY((magnitudes[j] + 60) * 10);
-                            circle.setFill(Color.web("white", .3));
-                            wave.getChildren().add(circle);
-                            i += 21;
+                        for (magnitudePlace = 0; magnitudePlace < 64; magnitudePlace++) {
+                            CircleBuild(x + interval, y + ((-1 * (magnitudes[magnitudePlace] + 60)) * 10));
+                            CircleBuild(pane.getWidth() - interval - x, y + ((-1 * (magnitudes[magnitudePlace] + 60) * 10)));
+                            CircleBuild(pane.getWidth() - interval - x, (magnitudes[magnitudePlace] + 60) * 10);
+                            CircleBuild(x + interval, (magnitudes[magnitudePlace] + 60) * 10);
+                            interval += 21;
                         }
                     }
             );
-
             func.blendWithGrad(root, wave);
-
             pane.getChildren().add(root);
+        }
+        /**
+         * A utility function for the Waveform animation class.  This function
+         * allows for the building of specific circles on a the pane given the
+         * circles starting (x, y) coordinate.  I passed the magnitude information
+         * into this function to create the circles which dance around
+         * @param startingCenterX
+         * @param startingCenterY 
+         */
+        public void CircleBuild(double startingCenterX, double startingCenterY) {
+            Circle circle = new Circle(15);
+            circle.setCenterX(startingCenterX);
+            circle.setCenterY(startingCenterY);
+            circle.setFill(Color.web("white", .3));
+            wave.getChildren().add(circle);
         }
     }
 
     /**
-     * This animation creates a series of colored rotating lines from 5 
-     * different focal points on the screen which dissipate at the top left
-     * hand corner.  Where the lines emanate from are determined by the magnitude
-     * of the bass in the song.
+     * This animation creates a series of colored rotating lines from 5
+     * different focal points on the screen which dissipate at the top left hand
+     * corner. Where the lines emanate from are determined by the magnitude of
+     * the bass in the song.
      */
-    
     class SlashingLinesAnimation implements AnimationState {
 
         public void setXKAnimationListener(AnimationStateContext animationStateContext) {
@@ -581,10 +562,10 @@ public class XKVisualUI extends Application {
     }
 
     /**
-     * This animation creates three different focal points on our pane which 
-     * represent treble, middle, and bass magnitudes, respectively.  Then based
-     * on the loudness of each particular magnitude rectangles of height h and 
-     * width w appear and shrink back into the focal point, rotating to the 
+     * This animation creates three different focal points on our pane which
+     * represent treble, middle, and bass magnitudes, respectively. Then based
+     * on the loudness of each particular magnitude rectangles of height h and
+     * width w appear and shrink back into the focal point, rotating to the
      * degree of the particular magnitude.
      */
     class RectangularRotationAnimation implements AnimationState {
@@ -603,8 +584,8 @@ public class XKVisualUI extends Application {
                         double middleMagnitude = (magnitudes[10] + 60) * 4;
                         double trebleMagnitude = (magnitudes[24] + 60) * 4;
                         Group tempRoot = new Group();
-                        
-                        rectangularRotation.getChildren().add(new RectangularRotation(pane.getWidth()/20,
+
+                        rectangularRotation.getChildren().add(new RectangularRotation(pane.getWidth() / 20,
                                 pane.getHeight() / 3, bassMagnitude * 2, bassMagnitude * 4, Color.web("blue", 0.5), (bassMagnitude - 60.0) / 20.0));
                         rectangularRotation.getChildren().add(new RectangularRotation(pane.getWidth() / 2,
                                 pane.getHeight() / 5, middleMagnitude * 2, middleMagnitude * 4, Color.web("lime", 0.5), (bassMagnitude - 60.0) / 20.0));
@@ -617,6 +598,10 @@ public class XKVisualUI extends Application {
         }
     }
 
+    /**
+     * A utility function called in whatever case it might be necessary to close
+     * the existing threads which certain modes use.
+     */
     public void closeThreads() {
         if (modeStateContext.isMode("RunByAudio")) {
             runByAudioThread.cancel();
