@@ -1,6 +1,6 @@
 # XKVisual
 A project undertaken in the Spring Semester of 2017.
-It is an audio-waveform visualizer which manipulates artistic renderings of music and adds effects to the music you are listening to.
+It is an audio-waveform visualizer which manipulates artistic renderings of music based on the audio playing.
 
 ### Requirements for viewing
 
@@ -9,7 +9,11 @@ It is an audio-waveform visualizer which manipulates artistic renderings of musi
 This is the exact IDE which was this application was built on.  [Click here for a link to install Java SE version.](https://netbeans.org/downloads/)
 
 Once the installation process is completed, clone this repository in and save it as a project.  All the necessary files are already
-within the build, so there should be no problems at this point.  Then run the XKVisualTest class as your main to get started!
+within the clone, so there should be no problems at this point.  Then run the XKVisualTest class as your main to get started!
+
+If there is an error pertaining to the icon files upon build, try copying and pasting the icon files found in the clone into wherever
+the build folder for this project is within your machine [Typically in /NetbeansProjects/XKVisual/Build].  The code is designed to work
+in this way.
 
 ### ModeStates
 
