@@ -649,18 +649,6 @@ public class XKVisualUI extends Application {
     private void makeAnimation(AnimationStateContext animationStateContext, AnimationState animationState) {
         animationState.setXKAnimationListener(animationStateContext);
     }
-
-    /**
-     * A utility function to minimize code whenever we need to find the
-     * instantaneous bass, middle, and treble magnitudes for the RunByAudio
-     * ModeState.
-     *
-     * @param newBassMagnitude
-     */
-    public void setMagnitudes(double newBassMagnitude) {
-        bassMagnitude = newBassMagnitude;
-    }
-
     /**
      * This function takes care of setting up the toolbar at the bottom of the
      * XKVisual UI.
