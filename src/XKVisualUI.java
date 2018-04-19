@@ -441,13 +441,13 @@ public class XKVisualUI extends Application {
                             float[] phases) -> {
 
                         bassMagnitude = (magnitudes[0] + 60) * 4;
-
-                        if ((magnitudes[2] + 60) * 4 > 120) {
+                        double multiplier = 4;
+                        if ((magnitudes[2] + 60) * multiplier > 120) {
                             congregatedCircles.getChildren().add(new CongregatedCircles(30, Color.web("blue", 0.9)));
-                        } else if ((magnitudes[0] + 60) * 4 > 90) {
+                        } else if ((magnitudes[0] + 60) * multiplier > 90) {
                             congregatedCircles.getChildren().add(new CongregatedCircles(60, Color.web("red", 0.9)));
 
-                        } else if ((magnitudes[40] + 60) * 4 > 30) {
+                        } else if ((magnitudes[40] + 60) * multiplier > 30) {
                             congregatedCircles.getChildren().add(new CongregatedCircles(60, Color.web("yellow", 0.9)));
                         }
                     }
@@ -533,26 +533,27 @@ public class XKVisualUI extends Application {
                             float[] phases) -> {
 
                         bassMagnitude = (magnitudes[0] + 60) * 4;
-
+                        int widthLimit = 1800;
+                        int heightLimit = 750;
                         if (bassMagnitude > 130) {
-                            slashingLines.getChildren().add(new SlashingLines(1250,
-                                    bassMagnitude + 600, 1300, bassMagnitude + 400,
+                            slashingLines.getChildren().add(new SlashingLines(widthLimit,
+                                    bassMagnitude + heightLimit, 1300, bassMagnitude + 400,
                                     Color.web("blue", .9)));
                         } else if (bassMagnitude > 120) {
                             slashingLines.getChildren().add(new SlashingLines(400,
-                                    bassMagnitude + 600, 500, bassMagnitude + 400,
+                                    bassMagnitude + heightLimit, 500, bassMagnitude + 400,
                                     Color.web("yellow", .9)));
                         } else if (bassMagnitude > 90) {
-                            slashingLines.getChildren().add(new SlashingLines(1250,
+                            slashingLines.getChildren().add(new SlashingLines(widthLimit,
                                     bassMagnitude + 300, 1300, bassMagnitude + 100,
                                     Color.web("lime", .9)));
                         } else if (bassMagnitude > 80) {
-                            slashingLines.getChildren().add(new SlashingLines(1250,
+                            slashingLines.getChildren().add(new SlashingLines(widthLimit,
                                     bassMagnitude + 100, 1300, bassMagnitude,
                                     Color.web("red", .9)));
                         } else if (bassMagnitude > 70) {
                             slashingLines.getChildren().add(new SlashingLines(0,
-                                    bassMagnitude + 600, 150, bassMagnitude + 400,
+                                    bassMagnitude + heightLimit, 150, bassMagnitude + 400,
                                     Color.web("lightgreen", .9)));
                         }
                     });
