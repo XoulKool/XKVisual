@@ -111,23 +111,25 @@ public class UsefulFunctions {
     public void blendWithGrad(Group root, Node... varargs) {
         
         Rectangle colors;
+        int gradWidth = 2000;
+        int gradHeight = 1600;
 
         if (counter % numberOGrads == 0) 
-            colors = new Rectangle(1600, 1200, grad1);
+            colors = new Rectangle(gradWidth, gradHeight, grad1);
         else if(counter % numberOGrads == 1)
-            colors = new Rectangle(1600, 1200, grad2);
+            colors = new Rectangle(gradWidth, gradHeight, grad2);
         else if(counter % numberOGrads == 2)
-            colors = new Rectangle(1600, 1200, grad3);
+            colors = new Rectangle(gradWidth, gradHeight, grad3);
         else if(counter % numberOGrads == 3)
-            colors = new Rectangle(1600, 1200, grad4);
+            colors = new Rectangle(gradWidth, gradHeight, grad4);
         else
-            colors = new Rectangle(1600, 1200, grad5);
+            colors = new Rectangle(gradWidth, gradHeight, grad5);
 
         Node[] newargs = new Node[varargs.length + 2];
 
         for (int i = 0; i < newargs.length; i++) {
             if (i == 0) {
-                newargs[i] = new Rectangle(1600, 1200, Color.BLACK);
+                newargs[i] = new Rectangle(gradWidth, gradHeight, Color.BLACK);
             } else if (i < newargs.length - 1) {
                 newargs[i] = varargs[i - 1];
             } else {

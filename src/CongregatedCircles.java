@@ -42,7 +42,7 @@ public class CongregatedCircles extends Group {
          * @param color
          */
         RandomCircle(double x, double y, double radius, Color color) {
-            super(x * 1400, y * 600, radius, color);
+            super(x * 2000, y * 900, radius, color);
             super.setStrokeType(StrokeType.OUTSIDE);
             super.setStroke(Color.web("white", 1));
             super.setStrokeWidth(4);
