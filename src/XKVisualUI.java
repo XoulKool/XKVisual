@@ -382,7 +382,6 @@ public class XKVisualUI extends Application {
          * Reports with a boolean whether or not AnimationModeContext is in the
          * specified state with a string.
          *
-         * @param animationToBeRan
          * @return
          */
         public boolean isAnimationState(String checkAnimation) {
@@ -681,7 +680,8 @@ public class XKVisualUI extends Application {
         runByAudio = new MenuItem("Run By Audio");
         runByTime = new MenuItem("Run By Time");
         runByUser = new MenuItem("Run By User");
-        modeSelect = new MenuButton("Mode Select", null, runByAudio, runByTime, runByUser);
+        modeSelect = new MenuButton("Mode Select", null);
+        modeSelect.getItems().addAll(runByAudio, runByTime, runByUser);
 
         //Setup for Second Menu Button
         ConcentricAnim = new MenuItem("Concentric Circle Animation");
@@ -689,7 +689,8 @@ public class XKVisualUI extends Application {
         WaveAnim = new MenuItem("Waveform Animation");
         SlashAnim = new MenuItem("Slashing Lines Animation");
         RectAnim = new MenuItem("Rectangular Rotation Animation");
-        animationSelect = new MenuButton("Animation Select", null, ConcentricAnim, CongregAnim, WaveAnim, SlashAnim, RectAnim);
+        animationSelect = new MenuButton("Animation Select", null);
+        animationSelect.getItems().addAll(ConcentricAnim, CongregAnim, WaveAnim, SlashAnim, RectAnim);
 
         buttonFunctionality();
 
