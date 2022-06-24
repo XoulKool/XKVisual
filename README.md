@@ -4,18 +4,22 @@ It is an audio-waveform visualizer which manipulates artistic renderings of musi
 
 ### Requirements for viewing
 
-* Netbeans IDE v8.2 w/ JavaFx
+* JDK 8
+* JavaFX 2.2
 
-This is the exact IDE which was this application was built on.  [Click here for a link to install Java SE version.](https://netbeans.org/downloads/)
+Java 8 is the only verified sdk installation which works with JavaFX 2.2, which is used for the frontend UI for this application.
+Oracle discontinued JavaFX after this installation and unknown errors
+may occur if a different installation is used.
 
-Once the installation process is completed, clone this repository in and save it as a project.  All the necessary files are already
-within the clone, so there should be no problems at this point.  Then run the XKVisualTest class as your main to get started!
+Download JavaFX 2.2 [here](https://www.oracle.com/java/technologies/javafx2-archive-downloads.html)
+
+After doing so, be sure the `lib` directory in Java FX 2.2 runtime is added to the list of libraries in your project.
 
 If there is an error pertaining to the icon files upon build, try copying and pasting the icon files found in the clone into wherever
 the build folder for this project is within your machine [Typically in /NetbeansProjects/XKVisual/Build].  The code is designed to work
 in this way.
 
-### ModeStates
+### Modes
 
 There are three primary modes for this application.  All of which can be selected from a dropdown menu selection.
 * RunByAudio
